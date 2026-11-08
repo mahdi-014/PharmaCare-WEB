@@ -132,7 +132,7 @@ PharmaCare-PHP/
 │   ├── sales.php              # Interactive POS billing counter + sales ledger
 │   └── invoice.php            # Official printable sales tax receipt
 ├── api/
-│   └── index.php              # Unified JSON API endpoint (search, cart, live order status) (Q6)
+│   └── router.php             # Unified JSON Web API router (search, cart, live order status) (Q6)
 ├── assets/
 │   ├── style.css              # Custom layout styling, status badges, print rules (Q2)
 │   └── script.js              # Debounced search, async cart, live order polling, POS billing (Q3)
@@ -162,7 +162,7 @@ This section maps questions **Q1 through Q9** in the CIS324 Web Engineering seme
 │ Q3: Dynamic UI & Client Validation    ──► assets/script.js                  │
 │ Q4: Relational DB & PDO Connection    ──► config/database.php, pharmacare   │
 │ Q5: Security, CSRF & Input Sanitizing ──► includes/functions.php, e(), csrf │
-│ Q6: Asynchronous JSON APIs & Fetch    ──► api/index.php, assets/script.js   │
+│ Q6: Asynchronous JSON APIs & Fetch    ──► api/router.php, assets/script.js  │
 │ Q7: Sessions, Inactivity & RBAC       ──► includes/auth.php, functions.php  │
 │ Q8: Layered MVC Pattern & Autoloader  ──► app/ (Model, Controller, InvServ) │
 │ Q9: Deployment & Server Security      ──► .htaccess, storage/prescriptions/ │
@@ -196,7 +196,7 @@ This section maps questions **Q1 through Q9** in the CIS324 Web Engineering seme
     1. **POS Billing Counter:** Automatically calculates line totals, dynamic discounts, and grand totals instantly in the browser as the cashier changes quantities or adds medicine rows.
     2. **Debounced Storefront Search:** Intercepts catalog search inputs with a 300ms debounce timer, updating the medicine card grid dynamically.
     3. **Asynchronous Cart Mutations:** Adds or updates items without full page refreshes.
-    4. **Live Order Polling:** Polls `api/index.php?action=status` every 10 seconds to update order status badges dynamically.
+    4. **Live Order Polling:** Polls `api/router.php?action=status` every 10 seconds to update order status badges dynamically.
   - Client-side validation is complemented with HTML5 attributes (`required`, `min`, `max`, `pattern` for Bangladesh phone numbers `^01[3-9]\d{8}$`), backed by rigorous server-side re-validation.
 
 ---
@@ -236,7 +236,7 @@ This section maps questions **Q1 through Q9** in the CIS324 Web Engineering seme
 ### Q6: Asynchronous JSON APIs & Vanilla JS Fetch Integration
 - **Concept:** Single-page dynamic interactivity via RESTful JSON endpoints using Vanilla JS Fetch API.
 - **Codebase Implementation:**
-  - Single unified dispatcher endpoint in `api/index.php`:
+  - Single unified dispatcher endpoint in `api/router.php`:
     - `action=search` (GET): Accepts `keyword` and `category_id`. Returns matching medicines, inventory status, and cart counts.
     - `action=cart_add` & `action=cart_update` (POST): Accepts JSON payloads to dynamically add, update, or remove cart items without reloading the page.
     - `action=status` (GET): Accepts `id` (Order ID). Returns current order status, prescription status, and complete transition history.

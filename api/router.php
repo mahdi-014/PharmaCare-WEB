@@ -1,7 +1,7 @@
 <?php
 /**
  * CIS324 Web Engineering - Topic 13: Pharmacy Management System
- * Unified Asynchronous JSON Web API Endpoint (Q6 Vanilla JS Fetch)
+ * Unified Asynchronous JSON Web API Router (Q6 Vanilla JS Fetch)
  *
  * Dispatches JSON API requests based on action parameter:
  * - action=search      : Live medicine catalog search (GET)

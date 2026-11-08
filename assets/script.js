@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const performSearch = () => {
             const query = encodeURIComponent(searchInput.value.trim());
             const catId = categorySelect ? encodeURIComponent(categorySelect.value) : '0';
-            const url = `api/index.php?action=search&q=${query}&category_id=${catId}`;
+            const url = `api/router.php?action=search&q=${query}&category_id=${catId}`;
 
             fetch(url)
                 .then(r => r.json())
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (orderId && !isTerminal) {
             const pollInterval = setInterval(() => {
-                fetch(`api/index.php?action=status&id=${orderId}`)
+                fetch(`api/router.php?action=status&id=${orderId}`)
                     .then(r => r.json())
                     .then(res => {
                         if (!res.success || !res.data) return;
