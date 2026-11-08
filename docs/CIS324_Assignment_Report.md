@@ -21,7 +21,7 @@
 | **Active Deployment Branch:** | `main` |
 | **Final Release Commit:** | `3db6a84` |
 | **Date of Submission:** | **November 30, 2026** |
-| **Student Name / ID:** | Md. Mahdi Hasan Milu (ID: 222-16-014) |
+| **Student Name / ID:** | Md. Mahdi Hasan (ID: 241-16-016) |
 | **Semester / Section:** | Fall 2026 / Section A |
 
 ---
@@ -996,7 +996,7 @@ I hereby confirm that:
 3. All database schemas, business logic algorithms, concurrency locking implementations, security defenses, and test executions were independently reviewed, executed, and verified by me.
 4. I maintain complete intellectual ownership of the submitted application and report, and I am prepared to defend every line of code, database query, and architectural decision during the project viva voce.
 
-**Student Signature:** *Md. Mahdi Hasan Milu*  
-**Student ID:** 222-16-014  
+**Student Signature:** *Md. Mahdi Hasan*  
+**Student ID:** 241-16-016  
 **Date:** November 09, 2026  
 **Repository:** [https://github.com/mahdi-014/PharmaCare-WEB.git](https://github.com/mahdi-014/PharmaCare-WEB.git)

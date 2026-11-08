@@ -2,6 +2,7 @@
 
 **Coursework Project:** CIS324 Web Engineering Semester Project  
 **Topic:** Topic 13 — Pharmacy Inventory and Online Medicine Ordering System  
+**Student Name / ID:** Md. Mahdi Hasan (ID: 241-16-016)  
 **Implementation Stack:** Core PHP 8.1+ / 8.3, MySQL / MariaDB 10.11+ (InnoDB), PDO (PHP Data Objects), Bootstrap 5.3.3, Vanilla JavaScript (ES6+ Fetch API).  
 **External Frameworks:** Strictly **Zero** — Native PHP and JavaScript without Laravel, Symfony, React, Vue, or Composer dependencies.  
 **Architecture:** Ultra-Compact Modular Architecture (~27 canonical files).
