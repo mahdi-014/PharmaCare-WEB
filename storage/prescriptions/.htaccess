@@ -1,3 +1,0 @@
-# Deny direct browser access to customer prescription files
-Require all denied
-Options -Indexes

@@ -1,2 +1,35 @@
-# PharmaCare - Apache Configuration (InfinityFree & Shared Hosting Compatible)
+# PharmaCare — Centralized Security & Web Server Configuration
+# Single Source of Truth for Directory Protection, Direct Access Blocking & HTTP Headers
+
+# 1. Global Directory Index & Directory Listing Prevention
 DirectoryIndex index.php
+Options -Indexes
+
+# 2. Global Security Response Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# 3. Block Direct Browser/HTTP Access to Sensitive Folders
+# Denies access to configuration, backend includes, database files, and patient prescriptions
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(config|includes|database|storage/prescriptions)(/.*)?$ - [F,L]
+</IfModule>
+<IfModule !mod_rewrite.c>
+    RedirectMatch 403 ^/(config|includes|database|storage/prescriptions)(/.*)?$
+</IfModule>
+
+# 4. Block Direct Access to Database Dumps & Sensitive File Types
+<FilesMatch "\.(sql|bak|dump|env|log|ini)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>

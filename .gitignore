@@ -1,18 +1,17 @@
-# PharmaCare - Repository Git Ignore
+# PharmaCare — Centralized Repository Git Ignore
+# Single Source of Truth for Ignored Files, Logs, and Local Overrides
 
-# Windows thumbnail caches & desktop configurations
+# 1. Operating System Metadata
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
 ehthumbs_vista.db
 [Dd]esktop.ini
-
-# macOS metadata
 .DS_Store
 .AppleDouble
 .LSOverride
 
-# IDE and Editor configurations
+# 2. IDE & Editor Configurations
 .vscode/
 .idea/
 *.sublime-project
@@ -21,31 +20,26 @@ ehthumbs_vista.db
 *.swo
 *~
 
-# PHP & Session temporary files
-*.tmp
-*.log
-sess_*
-cookies*.txt
-
-# Local environment overrides
+# 3. Environment Overrides & Credentials
 config.local.php
 .env
 .env.local
 
-# Backups and database archives
+# 4. Runtime Temporary Files & Logs
+*.tmp
+*.log
+sess_*
+cookies*.txt
+scratch/
+
+# 5. Local Database Dumps & Backup Archives
 backups/
 *.zip
 *.tar.gz
 *.bak
+*.dump
 *_dump.sql
 
-# Temporary scripts & scratch files
-scratch/
-hash.php
-verify_baseline.php
-
-# Uploaded customer prescriptions (protect patient data, preserve structure)
+# 6. Patient Uploaded Prescriptions (Confidential Medical Documents)
 storage/prescriptions/*
 !storage/prescriptions/.gitkeep
-!storage/prescriptions/.htaccess
-

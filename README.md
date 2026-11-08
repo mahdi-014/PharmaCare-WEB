@@ -137,14 +137,13 @@ PharmaCare-PHP/
 │   ├── style.css              # Custom layout styling, status badges, print rules (Q2)
 │   └── script.js              # Debounced search, async cart, live order polling, POS billing (Q3)
 ├── database/
-│   ├── pharmacare.sql         # Canonical 10-table relational schema & 15 medicines (Q4)
-│   └── .htaccess              # Prevents direct HTTP access to database dumps (Q9)
+│   └── pharmacare.sql         # Canonical 10-table relational schema & 15 medicines (Q4)
 ├── storage/
-│   └── prescriptions/         # Uploaded Rx files (.htaccess protected from direct web access) (Q9)
+│   └── prescriptions/         # Uploaded Rx files (blocked from direct web access via root .htaccess) (Q9)
 ├── actions.php                # Centralized POST form action processor with CSRF validation (Q1, Q5)
 ├── index.php                  # Central Front Controller & Route Dispatcher (Q1)
-├── .gitignore                 # Clean repository hygiene rules
-├── .htaccess                  # Apache server security headers & routing protection (Q9)
+├── .gitignore                 # Centralized repository ignore rules (Q9)
+├── .htaccess                  # Centralized Apache security, headers, & directory blocking (Q9)
 ├── LICENSE                    # MIT open-source license
 └── README.md                  # Comprehensive academic documentation & CIS324 Viva defense guide
 ```
@@ -284,9 +283,9 @@ This section maps questions **Q1 through Q9** in the CIS324 Web Engineering seme
 ### Q9: Deployment Architecture & Server Configuration
 - **Concept:** Production deployment readiness, web server configuration, directory security, and environment portability.
 - **Codebase Implementation:**
-  - **Apache Security via `.htaccess`:**
-    - Root `.htaccess` enables `FollowSymLinks`, configures default index to `index.php`, and sends HTTP security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`).
-    - Sensitive directories (`database/`, `storage/prescriptions/`) include individual `.htaccess` files containing `Require all denied` and `Options -Indexes`, preventing direct URL access to SQL dumps and patient prescription uploads.
+  - **Apache Security via Central Root `.htaccess`:**
+    - Root `.htaccess` acts as the single source of truth for web server security: globally enables `Options -Indexes`, configures default index to `index.php`, and applies HTTP security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: "1; mode=block"`).
+    - Directly denies public browser access to internal and sensitive directories (`config/`, `includes/`, `database/`, and `storage/prescriptions/`) and blocks direct requests for `.sql`, `.bak`, and `.dump` files.
   - **Prescription File Streaming:** Uploaded prescription documents are accessed exclusively through an authenticated streaming controller in `pages/order_detail.php?download=1`, verifying that only the owning customer or authorized staff/admin can view medical documents.
   - **Zero-Dependency Portability:** Runs seamlessly on local XAMPP, native CLI PHP, or standard Linux Apache shared hosting (e.g., InfinityFree, cPanel).
 
