@@ -111,8 +111,14 @@ function require_admin(): void
     require_login();
     if (!is_admin()) {
         http_response_code(403);
-        flash('error', 'Access denied. Administrator privileges required.');
-        redirect(is_customer() ? 'catalog' : 'dashboard');
+        require __DIR__ . '/header.php';
+        echo '<div class="alert alert-danger my-5 text-center shadow-sm">
+                <h4><i class="bi bi-shield-lock me-2"></i>403 Forbidden</h4>
+                <p class="mb-3 text-muted">Access denied: Administrator privileges required to access this resource.</p>
+                <a href="' . (is_customer() ? 'index.php?page=catalog' : 'index.php?page=dashboard') . '" class="btn btn-primary btn-sm"><i class="bi bi-house me-1"></i>Return Home</a>
+              </div>';
+        require __DIR__ . '/footer.php';
+        exit;
     }
 }
 
@@ -124,8 +130,14 @@ function require_staff_or_admin(): void
     require_login();
     if (!is_staff_or_admin()) {
         http_response_code(403);
-        flash('error', 'Access denied. Staff or Administrator privileges required.');
-        redirect('catalog');
+        require __DIR__ . '/header.php';
+        echo '<div class="alert alert-danger my-5 text-center shadow-sm">
+                <h4><i class="bi bi-shield-lock me-2"></i>403 Forbidden</h4>
+                <p class="mb-3 text-muted">Access denied: Staff or Administrator privileges required to access this resource.</p>
+                <a href="index.php?page=catalog" class="btn btn-primary btn-sm"><i class="bi bi-shop me-1"></i>Return to Storefront</a>
+              </div>';
+        require __DIR__ . '/footer.php';
+        exit;
     }
 }
 
@@ -137,7 +149,13 @@ function require_customer(): void
     require_login();
     if (!is_customer()) {
         http_response_code(403);
-        flash('error', 'Access denied. Customer account required for this action.');
-        redirect('dashboard');
+        require __DIR__ . '/header.php';
+        echo '<div class="alert alert-danger my-5 text-center shadow-sm">
+                <h4><i class="bi bi-shield-lock me-2"></i>403 Forbidden</h4>
+                <p class="mb-3 text-muted">Access denied: Customer account required for this action.</p>
+                <a href="index.php?page=dashboard" class="btn btn-primary btn-sm"><i class="bi bi-speedometer2 me-1"></i>Return to Dashboard</a>
+              </div>';
+        require __DIR__ . '/footer.php';
+        exit;
     }
 }

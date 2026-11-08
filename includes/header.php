@@ -17,6 +17,7 @@ $subtitles = [
     'invoice'      => 'Printable receipt for completed transaction',
     'login'        => 'Sign in to access your PharmaCare account',
     'register'     => 'Create a customer account to place medicine orders online',
+    'users'        => 'Manage system credentials, personnel roles, authorizations, and passwords',
 ];
 
 $cartCount = cart_get_count();
@@ -52,7 +53,7 @@ if (!user()) {
     ];
 
     if (is_admin()) {
-        $links[] = ['dashboard#users-section', 'people-fill', 'User Management', 'users'];
+        $links[] = ['users', 'people-fill', 'User Management', 'users'];
     }
     $brandUrl = url('dashboard');
     $brandSubtitle = 'Dispensary Portal';

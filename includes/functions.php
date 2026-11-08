@@ -289,6 +289,7 @@ function page_title(string $page): string
         'orders'       => 'Orders Management',
         'order_detail' => 'Order Inspection & Receipt',
         'login'        => 'User Authentication',
+        'users'        => 'User & Staff Management',
     ][$page] ?? 'PharmaCare';
 }
 

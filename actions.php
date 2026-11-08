@@ -155,7 +155,7 @@ $fallback = match ($action) {
     'category_save', 'category_delete' => 'medicines&tab=categories',
     'supplier_save', 'supplier_delete' => 'medicines&tab=suppliers',
     'medicine_save', 'medicine_toggle' => 'medicines',
-    'user_create', 'create_user', 'user_toggle', 'toggle_user_status', 'user_reset_password', 'reset_user_password' => 'dashboard',
+    'user_create', 'create_user', 'user_toggle', 'toggle_user_status', 'user_reset_password', 'reset_user_password' => 'users',
     'sale_create'                      => 'sales&tab=pos',
     'profile_update'                   => 'dashboard',
     'cart_add'                         => 'catalog',
@@ -388,8 +388,7 @@ try {
                 [$fullName, $username, $email, password_hash($password, PASSWORD_BCRYPT), $role]
             );
             flash('success', "User account '@{$username}' ({$role}) created successfully.");
-            header('Location: ' . url('dashboard') . '#users-section');
-            exit;
+            redirect('users');
 
         case 'user_toggle':
         case 'toggle_user_status':
@@ -408,8 +407,7 @@ try {
             execute_sql('UPDATE app_users SET enabled = ? WHERE id = ?', [$newStatus, $id]);
             $statusWord = $newStatus ? 'activated' : 'disabled';
             flash('success', "User account '@{$target['username']}' has been {$statusWord}.");
-            header('Location: ' . url('dashboard') . '#users-section');
-            exit;
+            redirect('users');
 
         case 'user_reset_password':
         case 'reset_user_password':
@@ -424,8 +422,7 @@ try {
             }
             execute_sql('UPDATE app_users SET password = ? WHERE id = ?', [password_hash($newPassword, PASSWORD_BCRYPT), $id]);
             flash('success', "Password for '@{$target['username']}' has been reset successfully.");
-            header('Location: ' . url('dashboard') . '#users-section');
-            exit;
+            redirect('users');
 
         case 'sale_create':
             $customer = optional_text('customer_name', 100);

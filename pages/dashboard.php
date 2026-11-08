@@ -26,6 +26,11 @@ $alerts = $summary['inventory_alerts'];
         <h2 class="h4 mb-0 fw-bold">Welcome, <?= e(user()['full_name']) ?> <span class="fs-5">👋</span></h2>
     </div>
     <div class="d-flex flex-wrap gap-2">
+        <?php if (is_admin()): ?>
+            <a href="<?= e(url('users')) ?>" class="btn btn-outline-dark" title="Manage Staff &amp; System Users">
+                <i class="bi bi-people me-1"></i>Users
+            </a>
+        <?php endif; ?>
         <a href="<?= e(url('catalog')) ?>" class="btn btn-outline-secondary" title="View customer storefront catalog">
             <i class="bi bi-shop me-1"></i>Storefront View
         </a>
@@ -501,181 +506,27 @@ $alerts = $summary['inventory_alerts'];
 </div>
 
 <?php if (is_admin()): 
-    $allUsers = fetch_all('SELECT id, full_name, username, email, role, enabled, created_at FROM app_users ORDER BY id ASC');
+    $userStats = fetch_one("SELECT COUNT(*) AS total_users, SUM(role = 'STAFF') AS total_staff, SUM(role = 'ADMIN') AS total_admins FROM app_users");
 ?>
-<!-- System User Administration (Admin Only) -->
-<div class="card shadow-sm mb-4" id="users-section">
-    <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+<!-- Admin Quick Navigation to Dedicated User Management -->
+<div class="card shadow-sm mb-4 border-primary-subtle bg-light">
+    <div class="card-body p-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-primary text-white p-3 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                <i class="bi bi-people-fill fs-5"></i>
+            </div>
+            <div>
+                <strong class="text-dark d-block">System Personnel &amp; Staff Directory</strong>
+                <span class="small text-secondary">
+                    <?= (int)($userStats['total_users'] ?? 0) ?> registered user accounts (<?= (int)($userStats['total_staff'] ?? 0) ?> dispensary pharmacists, <?= (int)($userStats['total_admins'] ?? 0) ?> administrators)
+                </span>
+            </div>
+        </div>
         <div>
-            <strong class="d-flex align-items-center"><i class="bi bi-people-fill me-2 text-primary"></i>Staff &amp; Admin User Administration</strong>
-            <div class="small text-secondary">Manage dispensary staff accounts, roles, access status, and credentials</div>
-        </div>
-        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addUserModal">
-            <i class="bi bi-person-plus me-1"></i>Add New User
-        </button>
-    </div>
-
-    <!-- User Directory Table -->
-    <div class="table-responsive">
-        <table class="table align-middle table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th style="width: 50px;">ID</th>
-                    <th>Username &amp; Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Account Status</th>
-                    <th>Created At</th>
-                    <th class="text-end" style="min-width: 170px;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($allUsers as $u): ?>
-                    <tr>
-                        <td class="text-secondary small">#<?= (int)$u['id'] ?></td>
-                        <td>
-                            <strong class="text-dark d-block">@<?= e($u['username']) ?></strong>
-                            <span class="small text-secondary"><?= e($u['full_name']) ?></span>
-                            <?php if ((int)$u['id'] === (int)user()['id']): ?>
-                                <span class="badge text-bg-light border text-muted ms-1">You</span>
-                            <?php endif; ?>
-                        </td>
-                        <td class="text-secondary small"><?= e($u['email'] ?: '—') ?></td>
-                        <td>
-                            <?php 
-                                $rBadge = match($u['role']) {
-                                    'ADMIN' => 'danger',
-                                    'STAFF' => 'primary',
-                                    'CUSTOMER' => 'info',
-                                    default => 'secondary'
-                                };
-                            ?>
-                            <span class="badge text-bg-<?= $rBadge ?>">
-                                <?= e($u['role']) ?>
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge text-bg-<?= $u['enabled'] ? 'success' : 'secondary' ?>">
-                                <?= $u['enabled'] ? 'Active' : 'Disabled' ?>
-                            </span>
-                        </td>
-                        <td class="text-secondary small"><?= nice_date($u['created_at'], true) ?></td>
-                        <td class="text-end">
-                            <?php if ((int)$u['id'] !== (int)user()['id']): ?>
-                                <div class="d-inline-flex gap-1">
-                                    <form action="actions.php" method="post" class="d-inline m-0">
-                                        <?= csrf_field() ?>
-                                        <input type="hidden" name="action" value="toggle_user_status">
-                                        <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
-                                        <button class="btn btn-sm btn-outline-<?= $u['enabled'] ? 'danger' : 'success' ?>"
-                                                onclick="return confirm('<?= $u['enabled'] ? 'Disable' : 'Enable' ?> user account @<?= e($u['username']) ?>?');">
-                                            <?= $u['enabled'] ? 'Disable' : 'Enable' ?>
-                                        </button>
-                                    </form>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary btn-reset-password"
-                                            data-bs-toggle="modal" data-bs-target="#resetPasswordModal"
-                                            data-user-id="<?= (int)$u['id'] ?>" data-username="<?= e($u['username']) ?>" title="Reset Password">
-                                        <i class="bi bi-key"></i>
-                                    </button>
-                                </div>
-                            <?php else: ?>
-                                <span class="badge text-bg-light border text-muted">Current Session</span>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Add User Modal -->
-<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content shadow">
-            <form action="actions.php" method="post">
-                <?= csrf_field() ?>
-                <input type="hidden" name="action" value="create_user">
-                <div class="modal-header bg-light">
-                    <h5 class="modal-title h6 mb-0" id="addUserModalLabel">
-                        <i class="bi bi-person-plus text-primary me-2"></i>Add New System User
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-3">
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Full Name *</label>
-                        <input type="text" name="full_name" class="form-control form-control-sm" maxlength="80" required placeholder="e.g. Dr. Mahdi Hasan">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Username *</label>
-                        <input type="text" name="username" class="form-control form-control-sm" minlength="3" maxlength="50" pattern="[A-Za-z0-9_.-]+" autocomplete="off" required placeholder="e.g. mahdi.staff">
-                        <div class="form-text text-muted" style="font-size: 11px;">Alphanumeric characters, dots, or hyphens (3–50 chars)</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Email Address</label>
-                        <input type="email" name="email" class="form-control form-control-sm" maxlength="100" placeholder="e.g. staff@pharmacare.local">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Role *</label>
-                        <select class="form-select form-select-sm" name="role" required>
-                            <option value="STAFF" selected>STAFF (Dispensary Pharmacist)</option>
-                            <option value="ADMIN">ADMIN (Full Administrator)</option>
-                            <option value="CUSTOMER">CUSTOMER (Online Storefront)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Initial Password *</label>
-                        <input type="password" name="password" class="form-control form-control-sm" minlength="8" maxlength="72" autocomplete="new-password" required placeholder="Minimum 8 characters">
-                    </div>
-                </div>
-                <div class="modal-footer bg-light py-2">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle me-1"></i>Create User</button>
-                </div>
-            </form>
+            <a href="<?= e(url('users')) ?>" class="btn btn-sm btn-primary">
+                <i class="bi bi-person-gear me-1"></i>Manage Users &rarr;
+            </a>
         </div>
     </div>
 </div>
-
-<!-- Reset Password Modal -->
-<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content shadow">
-            <form action="actions.php" method="post">
-                <?= csrf_field() ?>
-                <input type="hidden" name="action" value="reset_user_password">
-                <input type="hidden" name="id" id="reset_user_id" value="">
-                <div class="modal-header bg-light">
-                    <h5 class="modal-title h6 mb-0" id="resetPasswordModalLabel">
-                        <i class="bi bi-key text-warning me-1"></i>Reset Password
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-3">
-                    <p class="small text-muted mb-2">Setting new password for <strong id="reset_user_name_display" class="text-dark"></strong>:</p>
-                    <label class="form-label small fw-semibold">New Password *</label>
-                    <input type="password" name="new_password" class="form-control form-control-sm" minlength="8" maxlength="72" autocomplete="new-password" required placeholder="Min 8 characters">
-                </div>
-                <div class="modal-footer bg-light py-2">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning btn-sm">Set Password</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.btn-reset-password').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var userIdInput = document.getElementById('reset_user_id');
-            var userNameDisplay = document.getElementById('reset_user_name_display');
-            if (userIdInput) userIdInput.value = this.dataset.userId;
-            if (userNameDisplay) userNameDisplay.textContent = '@' + this.dataset.username;
-        });
-    });
-});
-</script>
 <?php endif; ?>

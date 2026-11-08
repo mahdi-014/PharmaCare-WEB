@@ -21,7 +21,6 @@ $legacyRedirects = [
     'categories'            => fn() => redirect('medicines', ['tab' => 'categories']),
     'suppliers'             => fn() => redirect('medicines', ['tab' => 'suppliers']),
     'sale_form'             => fn() => redirect('sales', ['tab' => 'pos']),
-    'users'                 => fn() => redirect('dashboard'),
     'profile'               => fn() => redirect('dashboard'),
 ];
 
@@ -30,10 +29,10 @@ if (isset($legacyRedirects[$page])) {
     exit;
 }
 
-// 10 Consolidated Core Views
+// Consolidated Core Views
 $routes = [
     'login', 'register', 'dashboard', 'catalog',
-    'cart', 'orders', 'order_detail', 'medicines', 'sales', 'invoice'
+    'cart', 'orders', 'order_detail', 'medicines', 'sales', 'invoice', 'users'
 ];
 
 if (!in_array($page, $routes, true)) {
@@ -73,10 +72,13 @@ if ($page === 'catalog' && !user()) {
 require_login();
 
 // Strict Role-Based Access Control (RBAC)
+$adminOnlyPages    = ['users'];
 $staffOrAdminPages = ['dashboard', 'medicines', 'sales'];
 $customerOnlyPages = ['cart'];
 
-if (in_array($page, $staffOrAdminPages, true)) {
+if (in_array($page, $adminOnlyPages, true)) {
+    require_admin();
+} elseif (in_array($page, $staffOrAdminPages, true)) {
     require_staff_or_admin();
 } elseif (in_array($page, $customerOnlyPages, true)) {
     require_customer();
