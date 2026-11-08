@@ -394,7 +394,7 @@ class Controller
         $notes = optional_text('review_notes', 1000);
         $reviewerId = (int)user()['id'];
 
-        self::reviewPrescription($orderId, $status, $notes, $reviewerId);
+        self::processPrescriptionReview($orderId, $status, $notes, $reviewerId);
 
         $decision = $status === 'APPROVED' ? 'approved' : 'rejected';
         flash('success', "Prescription has been {$decision}.");
@@ -866,6 +866,45 @@ class Controller
             Order::updateStatus($pdo, $orderId, 'CANCELLED');
             $cancelRemarks = $remarks ?: 'Order cancelled by customer.';
             Order::addStatusHistory($pdo, $orderId, $currentStatus, 'CANCELLED', $customerId, $cancelRemarks);
+
+            $pdo->commit();
+
+        } catch (Throwable $ex) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $ex;
+        }
+    }
+
+    /**
+     * Pharmacist prescription verification (APPROVED or REJECTED).
+     */
+    public static function processPrescriptionReview(int $orderId, string $status, ?string $notes = null, ?int $reviewerId = null): void
+    {
+        $status = strtoupper(trim($status));
+        if (!in_array($status, ['APPROVED', 'REJECTED'], true)) {
+            throw new DomainException('Please select a valid review decision (Approved or Rejected).');
+        }
+
+        $pdo = db();
+        $pdo->beginTransaction();
+
+        try {
+            $order = Order::findById($orderId);
+            if (!$order) {
+                throw new DomainException('Order not found.');
+            }
+
+            if (in_array($order['order_status'], ['COMPLETED', 'CANCELLED'], true)) {
+                throw new DomainException('Cannot review prescription for a completed or cancelled order.');
+            }
+
+            Order::updatePrescriptionStatus($pdo, $orderId, $status, $reviewerId, $notes);
+
+            $actionText = $status === 'APPROVED' ? 'approved' : 'rejected';
+            $auditRemarks = "Prescription {$actionText} by pharmacist." . ($notes ? " Notes: {$notes}" : '');
+            Order::addStatusHistory($pdo, $orderId, (string)$order['order_status'], (string)$order['order_status'], $reviewerId, $auditRemarks);
 
             $pdo->commit();
 
