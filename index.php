@@ -16,7 +16,7 @@ $legacyRedirects = [
     'checkout'              => fn() => redirect('cart'),
     'my_orders'             => fn() => redirect('orders'),
     'order_confirmation'    => fn() => redirect('order_detail', ['id' => $_GET['id'] ?? 0, 'confirmed' => 1]),
-    'download_prescription' => fn() => redirect('order_detail', ['id' => $_GET['id'] ?? $_GET['order_id'] ?? 0, 'download' => 1]),
+    'download_prescription' => fn() => redirect('order_detail', ['id' => $_GET['id'] ?? $_GET['order_id'] ?? 0, 'view_rx' => 1]),
     'medicine_form'         => fn() => redirect('medicines', ['tab' => 'medicine_form', 'id' => $_GET['id'] ?? 0]),
     'categories'            => fn() => redirect('medicines', ['tab' => 'categories']),
     'suppliers'             => fn() => redirect('medicines', ['tab' => 'suppliers']),
@@ -80,6 +80,12 @@ if (in_array($page, $staffOrAdminPages, true)) {
     require_staff_or_admin();
 } elseif (in_array($page, $customerOnlyPages, true)) {
     require_customer();
+}
+
+// Intercept authenticated prescription streaming before any HTML layout header output
+if ($page === 'order_detail' && (isset($_GET['view_rx']) || isset($_GET['stream_rx']) || isset($_GET['download']))) {
+    (new \App\Controllers\Controller())->downloadPrescription();
+    exit;
 }
 
 // Render view wrapped in layout header and footer

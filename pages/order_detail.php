@@ -14,8 +14,8 @@ declare(strict_types=1);
 
 require_login();
 
-if (isset($_GET['download']) && $_GET['download'] === '1') {
-    (new \App\Controller())->downloadPrescription();
+if (isset($_GET['download']) || isset($_GET['view_rx']) || isset($_GET['stream_rx'])) {
+    (new \App\Controllers\Controller())->downloadPrescription();
     exit;
 }
 
@@ -361,7 +361,7 @@ $isConfirmedNotice = isset($_GET['confirmed']) && $_GET['confirmed'] === '1';
                             <button type="button" class="btn btn-sm btn-primary flex-grow-1" data-bs-toggle="modal" data-bs-target="#rxPreviewModal">
                                 <i class="bi bi-eye me-1"></i>Inspect Inline
                             </button>
-                            <a href="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&download=1" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open in raw tab">
+                            <a href="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&view_rx=1" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open in raw tab">
                                 <i class="bi bi-box-arrow-up-right"></i>
                             </a>
                         </div>
@@ -462,14 +462,14 @@ $isConfirmedNotice = isset($_GET['confirmed']) && $_GET['confirmed'] === '1';
             </div>
             <div class="modal-body p-3 text-center bg-light">
                 <?php if (str_starts_with((string)$prescription['mime_type'], 'image/')): ?>
-                    <img src="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&download=1" class="img-fluid rounded shadow-sm border bg-white" alt="Doctor Prescription" style="max-height: 70vh;">
+                    <img src="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&view_rx=1" class="img-fluid rounded shadow-sm border bg-white" alt="Doctor Prescription" style="max-height: 70vh;">
                 <?php elseif ($prescription['mime_type'] === 'application/pdf'): ?>
-                    <iframe src="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&download=1" style="width: 100%; height: 70vh; border: none;" class="rounded border bg-white"></iframe>
+                    <iframe src="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&view_rx=1" style="width: 100%; height: 70vh; border: none;" class="rounded border bg-white"></iframe>
                 <?php else: ?>
                     <div class="p-4 bg-white rounded border">
                         <i class="bi bi-file-earmark fs-1 text-secondary mb-2 d-block"></i>
                         <p class="mb-3">Preview unavailable for mime type <code><?= e($prescription['mime_type']) ?></code>.</p>
-                        <a href="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&download=1" target="_blank" class="btn btn-primary btn-sm">
+                        <a href="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&view_rx=1" target="_blank" class="btn btn-primary btn-sm">
                             <i class="bi bi-download me-1"></i>Download Document
                         </a>
                     </div>

@@ -496,17 +496,59 @@ class Controller
             exit('No prescription file associated with this order.');
         }
 
-        $filePath = dirname(__DIR__) . '/' . $rx['file_path'];
-        if (!file_exists($filePath)) {
+        $baseDir = dirname(__DIR__);
+        $cleanRelative = ltrim(str_replace(['\\', '/'], '/', (string)$rx['file_path']), '/');
+        $filePath = $baseDir . '/' . $cleanRelative;
+
+        $realPath = realpath($filePath);
+        $storageDir = realpath($baseDir . '/storage/prescriptions');
+
+        if (!$realPath || !$storageDir || !str_starts_with($realPath, $storageDir) || !is_file($realPath)) {
             http_response_code(404);
-            exit('Prescription file is missing from server storage.');
+            exit('Prescription file is missing or invalid.');
         }
 
-        header('Content-Type: ' . ($rx['mime_type'] ?: 'application/octet-stream'));
-        header('Content-Disposition: inline; filename="' . basename($rx['original_filename']) . '"');
-        header('Content-Length: ' . filesize($filePath));
-        header('Cache-Control: private, max-age=0, must-revalidate');
-        readfile($filePath);
+        // Clean all active output buffers to prevent corrupted binary image stream
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        $mime = !empty($rx['mime_type']) ? (string)$rx['mime_type'] : '';
+        if (empty($mime) || $mime === 'application/octet-stream') {
+            if (function_exists('finfo_open')) {
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $detected = finfo_file($finfo, $realPath);
+                finfo_close($finfo);
+                if ($detected) {
+                    $mime = $detected;
+                }
+            } elseif (function_exists('mime_content_type')) {
+                $detected = mime_content_type($realPath);
+                if ($detected) {
+                    $mime = $detected;
+                }
+            }
+        }
+        if (empty($mime)) {
+            $ext = strtolower(pathinfo($realPath, PATHINFO_EXTENSION));
+            $mime = match ($ext) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png'         => 'image/png',
+                'pdf'         => 'application/pdf',
+                default       => 'application/octet-stream',
+            };
+        }
+
+        $filename = basename(!empty($rx['original_filename']) ? $rx['original_filename'] : $realPath);
+        $safeFilename = str_replace(['"', "\r", "\n"], '', $filename);
+
+        header('Content-Type: ' . $mime);
+        header('Content-Disposition: inline; filename="' . $safeFilename . '"');
+        header('Content-Length: ' . (string)filesize($realPath));
+        header('Cache-Control: private, max-age=3600, must-revalidate');
+        header('X-Content-Type-Options: nosniff');
+
+        readfile($realPath);
         exit;
     }
 
