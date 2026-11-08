@@ -139,7 +139,14 @@ if (in_array($action, $staffOrAdminActions, true)) {
     require_staff_or_admin();
 }
 
-$adminActions = ['category_save', 'category_delete', 'supplier_save', 'supplier_delete', 'medicine_save', 'medicine_toggle', 'user_create', 'user_toggle'];
+$adminActions = [
+    'category_save', 'category_delete',
+    'supplier_save', 'supplier_delete',
+    'medicine_save', 'medicine_toggle',
+    'user_create', 'create_user',
+    'user_toggle', 'toggle_user_status',
+    'user_reset_password', 'reset_user_password'
+];
 if (in_array($action, $adminActions, true)) {
     require_admin();
 }
@@ -148,7 +155,7 @@ $fallback = match ($action) {
     'category_save', 'category_delete' => 'medicines&tab=categories',
     'supplier_save', 'supplier_delete' => 'medicines&tab=suppliers',
     'medicine_save', 'medicine_toggle' => 'medicines',
-    'user_create', 'user_toggle'       => 'dashboard',
+    'user_create', 'create_user', 'user_toggle', 'toggle_user_status', 'user_reset_password', 'reset_user_password' => 'dashboard',
     'sale_create'                      => 'sales&tab=pos',
     'profile_update'                   => 'dashboard',
     'cart_add'                         => 'catalog',
@@ -346,45 +353,79 @@ try {
             break;
 
         case 'user_create':
-            $fullName = required_text('full_name', 80);
-            $username = required_text('username', 50);
+        case 'create_user':
+            $fullName = trim((string)($_POST['full_name'] ?? ''));
+            $username = trim((string)($_POST['username'] ?? ''));
+            $email = optional_text('email', 100);
             $password = (string)($_POST['password'] ?? '');
-            $role = (string)($_POST['role'] ?? '');
+            $role = strtoupper(trim((string)($_POST['role'] ?? 'STAFF')));
 
+            if ($fullName === '') {
+                $fullName = $username;
+            }
             if (!preg_match('/^[A-Za-z0-9_.-]{3,50}$/', $username)) {
                 throw new DomainException('Username must contain 3–50 letters, numbers, periods, underscores or hyphens.');
+            }
+            if ($email !== null && (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 100)) {
+                throw new DomainException('Please enter a valid email address.');
             }
             if (strlen($password) < 8 || strlen($password) > 72) {
                 throw new DomainException('Password must contain 8–72 characters.');
             }
-            if (!in_array($role, ['ADMIN', 'STAFF'], true)) {
-                throw new DomainException('Invalid role.');
+            if (!in_array($role, ['ADMIN', 'STAFF', 'CUSTOMER'], true)) {
+                throw new DomainException('Invalid role. Role must be ADMIN, STAFF, or CUSTOMER.');
+            }
+
+            if (fetch_one('SELECT id FROM app_users WHERE LOWER(username) = LOWER(?)', [$username])) {
+                throw new DomainException('This username is already taken. Please choose another.');
+            }
+            if ($email !== null && fetch_one('SELECT id FROM app_users WHERE LOWER(email) = LOWER(?)', [$email])) {
+                throw new DomainException('This email is already registered to another user account.');
             }
 
             execute_sql(
-                'INSERT INTO app_users (full_name, username, password, role, enabled) VALUES (?, ?, ?, ?, ?)',
-                [$fullName, $username, password_hash($password, PASSWORD_BCRYPT), $role, isset($_POST['enabled']) ? 1 : 1]
+                'INSERT INTO app_users (full_name, username, email, password, role, enabled) VALUES (?, ?, ?, ?, ?, 1)',
+                [$fullName, $username, $email, password_hash($password, PASSWORD_BCRYPT), $role]
             );
-            flash('success', 'User account created successfully.');
-            redirect('dashboard');
-            break;
+            flash('success', "User account '@{$username}' ({$role}) created successfully.");
+            header('Location: ' . url('dashboard') . '#users-section');
+            exit;
 
         case 'user_toggle':
-            $id = positive_int($_POST['id'] ?? 0, 'User ID');
+        case 'toggle_user_status':
+            $id = positive_int($_POST['id'] ?? $_POST['user_id'] ?? 0, 'User ID');
             if ($id === (int)user()['id']) {
-                throw new DomainException('You cannot disable your own account.');
+                throw new DomainException('You cannot disable your own active account.');
             }
-            $target = fetch_one('SELECT id, enabled, role FROM app_users WHERE id = ?', [$id]);
+            $target = fetch_one('SELECT id, username, enabled, role FROM app_users WHERE id = ?', [$id]);
             if (!$target) {
                 throw new DomainException('User not found.');
             }
             if ($target['role'] === 'ADMIN' && (int)$target['enabled'] && (int)scalar("SELECT COUNT(*) FROM app_users WHERE role = 'ADMIN' AND enabled = 1") <= 1) {
                 throw new DomainException('You cannot disable the last active administrator.');
             }
-            execute_sql('UPDATE app_users SET enabled = ? WHERE id = ?', [(int)!$target['enabled'], $id]);
-            flash('success', 'User status updated.');
-            redirect('dashboard');
-            break;
+            $newStatus = (int)!$target['enabled'];
+            execute_sql('UPDATE app_users SET enabled = ? WHERE id = ?', [$newStatus, $id]);
+            $statusWord = $newStatus ? 'activated' : 'disabled';
+            flash('success', "User account '@{$target['username']}' has been {$statusWord}.");
+            header('Location: ' . url('dashboard') . '#users-section');
+            exit;
+
+        case 'user_reset_password':
+        case 'reset_user_password':
+            $id = positive_int($_POST['id'] ?? $_POST['user_id'] ?? 0, 'User ID');
+            $newPassword = (string)($_POST['new_password'] ?? '');
+            if (strlen($newPassword) < 8 || strlen($newPassword) > 72) {
+                throw new DomainException('New password must contain 8–72 characters.');
+            }
+            $target = fetch_one('SELECT id, username FROM app_users WHERE id = ?', [$id]);
+            if (!$target) {
+                throw new DomainException('User not found.');
+            }
+            execute_sql('UPDATE app_users SET password = ? WHERE id = ?', [password_hash($newPassword, PASSWORD_BCRYPT), $id]);
+            flash('success', "Password for '@{$target['username']}' has been reset successfully.");
+            header('Location: ' . url('dashboard') . '#users-section');
+            exit;
 
         case 'sale_create':
             $customer = optional_text('customer_name', 100);

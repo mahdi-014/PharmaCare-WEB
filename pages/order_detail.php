@@ -14,8 +14,87 @@ declare(strict_types=1);
 
 require_login();
 
-if (isset($_GET['download']) || isset($_GET['view_rx']) || isset($_GET['stream_rx'])) {
-    (new \App\Controllers\Controller())->downloadPrescription();
+// Authenticated Prescription Inline Streaming (Dual-Path Fallback & MIME Inspection)
+if (isset($_GET['view_rx']) || isset($_GET['stream_rx']) || (isset($_GET['download']) && $_GET['download'] === '1')) {
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
+    $streamOrderId = positive_int($_GET['id'] ?? $_GET['order_id'] ?? 0, 'Order ID');
+    $streamOrder = \App\Models\Order::findById($streamOrderId);
+
+    if (!$streamOrder) {
+        http_response_code(404);
+        exit('Order not found.');
+    }
+
+    if (is_customer() && (int)$streamOrder['customer_id'] !== (int)user()['id']) {
+        http_response_code(403);
+        exit('Access forbidden: You are not authorized to view this prescription.');
+    }
+
+    $rx = \App\Models\Order::getPrescription($streamOrderId);
+    if (!$rx || empty($rx['file_path'])) {
+        http_response_code(404);
+        exit('No prescription file associated with this order.');
+    }
+
+    $baseDir = dirname(__DIR__);
+    $rawPath = str_replace(['\\', '/'], '/', (string)$rx['file_path']);
+    $rawFilename = basename($rawPath);
+
+    $candidates = [
+        $baseDir . '/' . ltrim($rawPath, '/'),
+        $baseDir . '/storage/prescriptions/' . $rawFilename,
+        $baseDir . '/storage/' . ltrim($rawPath, '/'),
+    ];
+
+    $fullPath = null;
+    foreach ($candidates as $cand) {
+        if (file_exists($cand) && is_file($cand)) {
+            $fullPath = realpath($cand) ?: $cand;
+            break;
+        }
+    }
+
+    if (!$fullPath || !file_exists($fullPath)) {
+        http_response_code(404);
+        exit('Prescription file is missing from server storage.');
+    }
+
+    $mime = !empty($rx['mime_type']) ? (string)$rx['mime_type'] : '';
+    if (empty($mime) || $mime === 'application/octet-stream') {
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $detected = finfo_file($finfo, $fullPath);
+            finfo_close($finfo);
+            if ($detected) $mime = $detected;
+        } elseif (function_exists('mime_content_type')) {
+            $detected = mime_content_type($fullPath);
+            if ($detected) $mime = $detected;
+        }
+    }
+    if (empty($mime)) {
+        $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+        $mime = match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png'         => 'image/png',
+            'gif'         => 'image/gif',
+            'webp'        => 'image/webp',
+            'pdf'         => 'application/pdf',
+            default       => 'application/octet-stream',
+        };
+    }
+
+    $filename = basename(!empty($rx['original_filename']) ? $rx['original_filename'] : $rawFilename);
+    $safeFilename = str_replace(['"', "\r", "\n"], '', $filename);
+
+    header('Content-Type: ' . $mime);
+    header('Content-Disposition: inline; filename="' . $safeFilename . '"');
+    header('Content-Length: ' . (string)filesize($fullPath));
+    header('Cache-Control: private, max-age=3600, must-revalidate');
+    header('X-Content-Type-Options: nosniff');
+    readfile($fullPath);
     exit;
 }
 

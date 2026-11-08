@@ -307,9 +307,9 @@ $alerts = $summary['inventory_alerts'];
                                         <?= $rank + 1 ?>
                                     </span>
                                     <div>
-                                        <strong class="d-block text-dark"><?= e($item['name']) ?></strong>
+                                        <strong class="d-block text-dark"><?= e($item['name'] ?? $item['medicine_name'] ?? 'Unknown') ?></strong>
                                         <div class="small text-secondary">
-                                            <?= e($item['generic_name']) ?> &bull; <span class="badge text-bg-light border text-secondary" style="font-size: 10px;"><?= e($item['category_name']) ?></span>
+                                            <?= e($item['generic_name'] ?? '') ?><?php if (!empty($item['category_name'])): ?> &bull; <span class="badge text-bg-light border text-secondary" style="font-size: 10px;"><?= e($item['category_name']) ?></span><?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -457,8 +457,11 @@ $alerts = $summary['inventory_alerts'];
                             <span class="small text-secondary"><?= e($m['supplier_name'] ?? '—') ?></span>
                         </td>
                         <td>
-                            <span class="badge text-bg-<?= e(status_badge($m['computed_status'])) ?>">
-                                <?= e(status_label($m['computed_status'])) ?>
+                            <?php 
+                                $alertStatus = (string)($m['computed_status'] ?? $m['alert_type'] ?? (function_exists('medicine_status') ? medicine_status($m) : 'AVAILABLE'));
+                            ?>
+                            <span class="badge text-bg-<?= e(status_badge($alertStatus)) ?>">
+                                <?= e(status_label($alertStatus)) ?>
                             </span>
                         </td>
                         <td>
@@ -498,55 +501,18 @@ $alerts = $summary['inventory_alerts'];
 </div>
 
 <?php if (is_admin()): 
-    $allUsers = fetch_all('SELECT id, full_name, username, role, enabled FROM app_users ORDER BY full_name');
+    $allUsers = fetch_all('SELECT id, full_name, username, email, role, enabled, created_at FROM app_users ORDER BY id ASC');
 ?>
 <!-- System User Administration (Admin Only) -->
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+<div class="card shadow-sm mb-4" id="users-section">
+    <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
         <div>
             <strong class="d-flex align-items-center"><i class="bi bi-people-fill me-2 text-primary"></i>Staff &amp; Admin User Administration</strong>
-            <div class="small text-secondary">Manage personnel credentials and active system authorizations</div>
+            <div class="small text-secondary">Manage dispensary staff accounts, roles, access status, and credentials</div>
         </div>
-        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#createUserCollapse">
-            <i class="bi bi-person-plus me-1"></i>Create New User
+        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <i class="bi bi-person-plus me-1"></i>Add New User
         </button>
-    </div>
-
-    <!-- Collapsible User Creation Form -->
-    <div class="collapse border-bottom bg-light" id="createUserCollapse">
-        <div class="card-body">
-            <form action="actions.php" method="post" class="row g-3">
-                <?= csrf_field() ?>
-                <input type="hidden" name="action" value="user_create">
-
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold" for="u_fullname">Full Name *</label>
-                    <input id="u_fullname" name="full_name" class="form-control form-control-sm" maxlength="80" required placeholder="e.g. Dr. Mahdi Hasan">
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold" for="u_user">Username *</label>
-                    <input id="u_user" name="username" class="form-control form-control-sm" minlength="3" maxlength="50" pattern="[A-Za-z0-9_.-]+" autocomplete="off" required placeholder="e.g. mahdi.staff">
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label small fw-semibold" for="u_pwd">Password *</label>
-                    <input id="u_pwd" type="password" name="password" class="form-control form-control-sm" minlength="8" maxlength="72" autocomplete="new-password" required placeholder="Min 8 characters">
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label small fw-semibold" for="u_r">Role *</label>
-                    <select class="form-select form-select-sm" name="role" id="u_r" required>
-                        <option value="STAFF">STAFF (Dispensary)</option>
-                        <option value="ADMIN">ADMIN (Full)</option>
-                    </select>
-                </div>
-
-                <div class="col-md-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-success btn-sm w-100">Save</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <!-- User Directory Table -->
@@ -554,46 +520,66 @@ $alerts = $summary['inventory_alerts'];
         <table class="table align-middle table-hover mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>User / Full Name</th>
-                    <th>Username</th>
+                    <th style="width: 50px;">ID</th>
+                    <th>Username &amp; Name</th>
+                    <th>Email</th>
                     <th>Role</th>
                     <th>Account Status</th>
-                    <th class="text-end">Status Toggle</th>
+                    <th>Created At</th>
+                    <th class="text-end" style="min-width: 170px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($allUsers as $u): ?>
                     <tr>
+                        <td class="text-secondary small">#<?= (int)$u['id'] ?></td>
                         <td>
-                            <strong class="text-dark"><?= e($u['full_name']) ?></strong>
+                            <strong class="text-dark d-block">@<?= e($u['username']) ?></strong>
+                            <span class="small text-secondary"><?= e($u['full_name']) ?></span>
                             <?php if ((int)$u['id'] === (int)user()['id']): ?>
                                 <span class="badge text-bg-light border text-muted ms-1">You</span>
                             <?php endif; ?>
                         </td>
-                        <td class="font-monospace text-muted small">@<?= e($u['username']) ?></td>
+                        <td class="text-secondary small"><?= e($u['email'] ?: '—') ?></td>
                         <td>
-                            <span class="badge text-bg-<?= $u['role'] === 'ADMIN' ? 'primary' : ($u['role'] === 'STAFF' ? 'info' : 'secondary') ?>">
+                            <?php 
+                                $rBadge = match($u['role']) {
+                                    'ADMIN' => 'danger',
+                                    'STAFF' => 'primary',
+                                    'CUSTOMER' => 'info',
+                                    default => 'secondary'
+                                };
+                            ?>
+                            <span class="badge text-bg-<?= $rBadge ?>">
                                 <?= e($u['role']) ?>
                             </span>
                         </td>
                         <td>
-                            <span class="badge text-bg-<?= $u['enabled'] ? 'success' : 'danger' ?>">
+                            <span class="badge text-bg-<?= $u['enabled'] ? 'success' : 'secondary' ?>">
                                 <?= $u['enabled'] ? 'Active' : 'Disabled' ?>
                             </span>
                         </td>
+                        <td class="text-secondary small"><?= nice_date($u['created_at'], true) ?></td>
                         <td class="text-end">
                             <?php if ((int)$u['id'] !== (int)user()['id']): ?>
-                                <form action="actions.php" method="post" class="d-inline">
-                                    <?= csrf_field() ?>
-                                    <input type="hidden" name="action" value="user_toggle">
-                                    <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
-                                    <button class="btn btn-sm btn-outline-<?= $u['enabled'] ? 'danger' : 'success' ?>"
-                                            onclick="return confirm('Toggle status for user <?= e($u['username']) ?>?');">
-                                        <?= $u['enabled'] ? 'Disable' : 'Enable' ?>
+                                <div class="d-inline-flex gap-1">
+                                    <form action="actions.php" method="post" class="d-inline m-0">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="action" value="toggle_user_status">
+                                        <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+                                        <button class="btn btn-sm btn-outline-<?= $u['enabled'] ? 'danger' : 'success' ?>"
+                                                onclick="return confirm('<?= $u['enabled'] ? 'Disable' : 'Enable' ?> user account @<?= e($u['username']) ?>?');">
+                                            <?= $u['enabled'] ? 'Disable' : 'Enable' ?>
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary btn-reset-password"
+                                            data-bs-toggle="modal" data-bs-target="#resetPasswordModal"
+                                            data-user-id="<?= (int)$u['id'] ?>" data-username="<?= e($u['username']) ?>" title="Reset Password">
+                                        <i class="bi bi-key"></i>
                                     </button>
-                                </form>
+                                </div>
                             <?php else: ?>
-                                <span class="text-muted small">Current Session</span>
+                                <span class="badge text-bg-light border text-muted">Current Session</span>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -602,4 +588,94 @@ $alerts = $summary['inventory_alerts'];
         </table>
     </div>
 </div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow">
+            <form action="actions.php" method="post">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="create_user">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title h6 mb-0" id="addUserModalLabel">
+                        <i class="bi bi-person-plus text-primary me-2"></i>Add New System User
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Full Name *</label>
+                        <input type="text" name="full_name" class="form-control form-control-sm" maxlength="80" required placeholder="e.g. Dr. Mahdi Hasan">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Username *</label>
+                        <input type="text" name="username" class="form-control form-control-sm" minlength="3" maxlength="50" pattern="[A-Za-z0-9_.-]+" autocomplete="off" required placeholder="e.g. mahdi.staff">
+                        <div class="form-text text-muted" style="font-size: 11px;">Alphanumeric characters, dots, or hyphens (3–50 chars)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Email Address</label>
+                        <input type="email" name="email" class="form-control form-control-sm" maxlength="100" placeholder="e.g. staff@pharmacare.local">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Role *</label>
+                        <select class="form-select form-select-sm" name="role" required>
+                            <option value="STAFF" selected>STAFF (Dispensary Pharmacist)</option>
+                            <option value="ADMIN">ADMIN (Full Administrator)</option>
+                            <option value="CUSTOMER">CUSTOMER (Online Storefront)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Initial Password *</label>
+                        <input type="password" name="password" class="form-control form-control-sm" minlength="8" maxlength="72" autocomplete="new-password" required placeholder="Minimum 8 characters">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-circle me-1"></i>Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content shadow">
+            <form action="actions.php" method="post">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="reset_user_password">
+                <input type="hidden" name="id" id="reset_user_id" value="">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title h6 mb-0" id="resetPasswordModalLabel">
+                        <i class="bi bi-key text-warning me-1"></i>Reset Password
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <p class="small text-muted mb-2">Setting new password for <strong id="reset_user_name_display" class="text-dark"></strong>:</p>
+                    <label class="form-label small fw-semibold">New Password *</label>
+                    <input type="password" name="new_password" class="form-control form-control-sm" minlength="8" maxlength="72" autocomplete="new-password" required placeholder="Min 8 characters">
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning btn-sm">Set Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.btn-reset-password').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var userIdInput = document.getElementById('reset_user_id');
+            var userNameDisplay = document.getElementById('reset_user_name_display');
+            if (userIdInput) userIdInput.value = this.dataset.userId;
+            if (userNameDisplay) userNameDisplay.textContent = '@' + this.dataset.username;
+        });
+    });
+});
+</script>
 <?php endif; ?>

@@ -497,13 +497,24 @@ class Controller
         }
 
         $baseDir = dirname(__DIR__);
-        $cleanRelative = ltrim(str_replace(['\\', '/'], '/', (string)$rx['file_path']), '/');
-        $filePath = $baseDir . '/' . $cleanRelative;
+        $rawPath = str_replace(['\\', '/'], '/', (string)$rx['file_path']);
+        $filename = basename($rawPath);
 
-        $realPath = realpath($filePath);
-        $storageDir = realpath($baseDir . '/storage/prescriptions');
+        $candidates = [
+            $baseDir . '/' . ltrim($rawPath, '/'),
+            $baseDir . '/storage/prescriptions/' . $filename,
+            $baseDir . '/storage/' . ltrim($rawPath, '/'),
+        ];
 
-        if (!$realPath || !$storageDir || !str_starts_with($realPath, $storageDir) || !is_file($realPath)) {
+        $realPath = null;
+        foreach ($candidates as $cand) {
+            if (file_exists($cand) && is_file($cand)) {
+                $realPath = realpath($cand);
+                break;
+            }
+        }
+
+        if (!$realPath || !is_file($realPath)) {
             http_response_code(404);
             exit('Prescription file is missing or invalid.');
         }
@@ -1007,15 +1018,18 @@ class Controller
 
         $stmt = $pdo->prepare("
             SELECT 
+                m.id,
                 m.id AS medicine_id,
+                m.name,
                 m.name AS medicine_name,
+                m.generic_name,
                 c.name AS category_name,
                 COALESCE(SUM(si.quantity), 0) AS total_units_sold,
                 COALESCE(SUM(si.line_total), 0.00) AS total_revenue_generated
             FROM sale_items si
             JOIN medicines m ON m.id = si.medicine_id
             JOIN categories c ON c.id = m.category_id
-            GROUP BY m.id, m.name, c.name
+            GROUP BY m.id, m.name, m.generic_name, c.name
             ORDER BY total_units_sold DESC
             LIMIT ?
         ");
@@ -1076,8 +1090,15 @@ class Controller
                     WHEN m.quantity <= 0 THEN 'OUT_OF_STOCK'
                     WHEN m.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 'EXPIRING_SOON'
                     WHEN m.quantity <= m.minimum_stock_level THEN 'LOW_STOCK'
-                    ELSE 'OK'
-                END AS alert_type
+                    ELSE 'AVAILABLE'
+                END AS alert_type,
+                CASE 
+                    WHEN m.expiry_date < CURDATE() THEN 'EXPIRED'
+                    WHEN m.quantity <= 0 THEN 'OUT_OF_STOCK'
+                    WHEN m.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 'EXPIRING_SOON'
+                    WHEN m.quantity <= m.minimum_stock_level THEN 'LOW_STOCK'
+                    ELSE 'AVAILABLE'
+                END AS computed_status
             FROM medicines m
             JOIN categories c ON c.id = m.category_id
             JOIN suppliers s ON s.id = m.supplier_id

@@ -50,6 +50,10 @@ if (!user()) {
         ['sales', 'cart-plus-fill', 'POS & Sales', 'sales'],
         ['catalog', 'shop', 'Storefront View', 'catalog'],
     ];
+
+    if (is_admin()) {
+        $links[] = ['dashboard#users-section', 'people-fill', 'User Management', 'users'];
+    }
     $brandUrl = url('dashboard');
     $brandSubtitle = 'Dispensary Portal';
 }
@@ -77,8 +81,10 @@ if (!user()) {
    <span><strong>PharmaCare</strong><small><?= e($brandSubtitle) ?></small></span>
  </a>
  <nav class="sidebar-nav">
- <?php foreach ($links as [$dest, $icon, $label, $selected]): ?>
-   <a class="<?= ($active === $selected ? 'active' : '') ?>" href="<?= e(url($dest)) ?>">
+ <?php foreach ($links as [$dest, $icon, $label, $selected]): 
+   $linkUrl = str_contains($dest, '#') ? 'index.php?page=' . $dest : url($dest);
+ ?>
+   <a class="<?= ($active === $selected ? 'active' : '') ?>" href="<?= e($linkUrl) ?>">
      <i class="bi bi-<?= e($icon) ?>"></i>
      <span><?= e($label) ?></span>
    </a>

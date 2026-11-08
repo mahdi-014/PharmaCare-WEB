@@ -84,7 +84,7 @@ if (in_array($page, $staffOrAdminPages, true)) {
 
 // Intercept authenticated prescription streaming before any HTML layout header output
 if ($page === 'order_detail' && (isset($_GET['view_rx']) || isset($_GET['stream_rx']) || isset($_GET['download']))) {
-    (new \App\Controllers\Controller())->downloadPrescription();
+    include __DIR__ . '/pages/order_detail.php';
     exit;
 }
 
