@@ -1,19 +1,43 @@
 <?php
+/**
+ * PharmaCare — Centralized Form Actions & State Mutation Processor
+ * Processes POST requests with mandatory CSRF token verification,
+ * domain validation, strict RBAC guards, and flash message redirects.
+ */
+
 declare(strict_types=1);
-require __DIR__ . '/includes/bootstrap.php';
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit('POST required.'); }
+
+require_once __DIR__ . '/includes/functions.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    exit('POST request required.');
+}
+
 csrf_verify();
+
 $action = (string)($_POST['action'] ?? '');
+
+// -------------------------------------------------------------
+// 1. Authentication Actions
+// -------------------------------------------------------------
 if ($action === 'login') {
     if (user()) redirect(is_customer() ? 'catalog' : 'dashboard');
     try {
         $identifier = trim((string)($_POST['username'] ?? ''));
         $password = (string)($_POST['password'] ?? '');
-        $account = fetch_one('SELECT id, full_name, username, email, password, role, enabled FROM app_users WHERE username = ? OR email = ? LIMIT 1', [$identifier, $identifier]);
+        $account = fetch_one(
+            'SELECT id, full_name, username, email, password, role, enabled 
+             FROM app_users 
+             WHERE username = ? OR email = ? LIMIT 1',
+            [$identifier, $identifier]
+        );
+
         if (!$account || !(int)$account['enabled'] || !password_verify($password, $account['password'])) {
             flash('error', 'Invalid username or password.');
             redirect('login');
         }
+
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int)$account['id'];
         $_SESSION['user'] = [
@@ -23,6 +47,7 @@ if ($action === 'login') {
             'role' => $account['role']
         ];
         $_SESSION['last_activity'] = time();
+
         flash('success', 'Welcome back, ' . $account['full_name'] . '!');
         redirect($account['role'] === 'CUSTOMER' ? 'catalog' : 'dashboard');
     } catch (PDOException $ex) {
@@ -30,6 +55,7 @@ if ($action === 'login') {
         redirect('login');
     }
 }
+
 if ($action === 'register') {
     if (user()) redirect(is_customer() ? 'catalog' : 'dashboard');
     try {
@@ -80,6 +106,7 @@ if ($action === 'register') {
         redirect('register');
     }
 }
+
 if ($action === 'logout') {
     $_SESSION = [];
     if (ini_get('session.use_cookies')) {
@@ -89,7 +116,10 @@ if ($action === 'logout') {
     session_destroy();
     redirect('login');
 }
-// Cart and Order actions authorization guard
+
+// -------------------------------------------------------------
+// 2. Authorization Guards
+// -------------------------------------------------------------
 $customerActions = ['cart_add', 'cart_update', 'cart_remove', 'cart_clear', 'order_create', 'order_cancel_customer'];
 if (in_array($action, $customerActions, true)) {
     if (!user()) {
@@ -104,25 +134,34 @@ if (in_array($action, $customerActions, true)) {
 
 require_login();
 
-// Staff and Admin order fulfillment actions
-$staffOrAdminActions = ['order_update_status', 'prescription_review'];
+$staffOrAdminActions = ['order_update_status', 'prescription_review', 'sale_create'];
 if (in_array($action, $staffOrAdminActions, true)) {
     require_staff_or_admin();
 }
 
-// Sensitive actions must be authorized independently of the UI.
-$adminActions = ['category_save','category_delete','supplier_save','supplier_delete','medicine_save','medicine_toggle','user_create','user_toggle'];
-if (in_array($action, $adminActions, true)) require_admin();
-$fallback = match($action) {
-    'category_save','category_delete'=>'categories','supplier_save','supplier_delete'=>'suppliers',
-    'medicine_save','medicine_toggle'=>'medicines','user_create','user_toggle'=>'users',
-    'sale_create'=>'sale_form','profile_update'=>'profile',
-    'cart_add'=>'catalog','cart_update','cart_remove','cart_clear'=>'cart',
-    'order_create'=>'checkout',
-    'order_update_status','prescription_review'=>'orders',
-    'order_cancel_customer'=>'my_orders',
-    default=>'dashboard'
+$adminActions = ['category_save', 'category_delete', 'supplier_save', 'supplier_delete', 'medicine_save', 'medicine_toggle', 'user_create', 'user_toggle'];
+if (in_array($action, $adminActions, true)) {
+    require_admin();
+}
+
+$fallback = match ($action) {
+    'category_save', 'category_delete' => 'medicines&tab=categories',
+    'supplier_save', 'supplier_delete' => 'medicines&tab=suppliers',
+    'medicine_save', 'medicine_toggle' => 'medicines',
+    'user_create', 'user_toggle'       => 'dashboard',
+    'sale_create'                      => 'sales&tab=pos',
+    'profile_update'                   => 'dashboard',
+    'cart_add'                         => 'catalog',
+    'cart_update', 'cart_remove', 'cart_clear' => 'cart',
+    'order_create'                     => 'cart',
+    'order_update_status', 'prescription_review' => 'orders',
+    'order_cancel_customer'            => 'orders',
+    default                            => 'dashboard'
 };
+
+// -------------------------------------------------------------
+// 3. Domain Action Execution
+// -------------------------------------------------------------
 try {
     switch ($action) {
         case 'profile_update':
@@ -141,144 +180,240 @@ try {
             break;
 
         case 'cart_add':
-            (new \App\Controllers\CartController())->add();
+            (new \App\Controller())->cartAdd();
             break;
 
         case 'cart_update':
-            (new \App\Controllers\CartController())->update();
+            (new \App\Controller())->cartUpdate();
             break;
 
         case 'cart_remove':
-            (new \App\Controllers\CartController())->remove();
+            (new \App\Controller())->cartRemove();
             break;
 
         case 'cart_clear':
-            (new \App\Controllers\CartController())->clear();
+            (new \App\Controller())->cartClear();
             break;
 
         case 'order_create':
-            (new \App\Controllers\OrderController())->store();
+            (new \App\Controller())->store();
             break;
 
         case 'order_update_status':
-            (new \App\Controllers\OrderController())->updateStatus();
+            (new \App\Controller())->updateStatus();
             break;
 
         case 'order_cancel_customer':
-            (new \App\Controllers\OrderController())->cancelByCustomer();
+            (new \App\Controller())->cancelByCustomer();
             break;
 
         case 'prescription_review':
-            (new \App\Controllers\OrderController())->reviewPrescription();
+            (new \App\Controller())->reviewPrescription();
             break;
+
         case 'category_save':
             $id = (int)($_POST['id'] ?? 0);
             $name = required_text('name', 80);
             $description = optional_text('description', 255);
             if ($id) {
-                if (!execute_sql('UPDATE categories SET name=?, description=? WHERE id=?', [$name,$description,$id])) {
-                    if (!fetch_one('SELECT id FROM categories WHERE id=?', [$id])) throw new DomainException('Category does not exist.');
+                if (!execute_sql('UPDATE categories SET name = ?, description = ? WHERE id = ?', [$name, $description, $id])) {
+                    if (!fetch_one('SELECT id FROM categories WHERE id = ?', [$id])) {
+                        throw new DomainException('Category does not exist.');
+                    }
                 }
-            } else execute_sql('INSERT INTO categories (name,description) VALUES (?,?)', [$name,$description]);
-            flash('success','Category saved successfully.'); break;
+            } else {
+                execute_sql('INSERT INTO categories (name, description) VALUES (?, ?)', [$name, $description]);
+            }
+            flash('success', 'Category saved successfully.');
+            redirect('medicines', ['tab' => 'categories']);
+            break;
+
         case 'category_delete':
             $id = positive_int($_POST['id'] ?? 0, 'Category ID');
-            if ((int)scalar('SELECT COUNT(*) FROM medicines WHERE category_id=?', [$id]) > 0) throw new DomainException('This category is used by medicines and cannot be deleted.');
-            execute_sql('DELETE FROM categories WHERE id=?', [$id]);
-            flash('success','Category deleted.'); break;
+            if ((int)scalar('SELECT COUNT(*) FROM medicines WHERE category_id = ?', [$id]) > 0) {
+                throw new DomainException('This category is used by medicines and cannot be deleted.');
+            }
+            execute_sql('DELETE FROM categories WHERE id = ?', [$id]);
+            flash('success', 'Category deleted successfully.');
+            redirect('medicines', ['tab' => 'categories']);
+            break;
+
         case 'supplier_save':
             $id = (int)($_POST['id'] ?? 0);
-            $values = [required_text('name',100), optional_text('company_name',120), required_text('phone',30),optional_text('email',120),optional_text('address',255)];
-            if ($values[3] && !filter_var($values[3], FILTER_VALIDATE_EMAIL)) throw new DomainException('Enter a valid email.');
+            $values = [
+                required_text('name', 100),
+                optional_text('company_name', 120),
+                required_text('phone', 30),
+                optional_text('email', 120),
+                optional_text('address', 255)
+            ];
+            if ($values[3] && !filter_var($values[3], FILTER_VALIDATE_EMAIL)) {
+                throw new DomainException('Enter a valid email.');
+            }
             if ($id) {
-                execute_sql('UPDATE suppliers SET name=?,company_name=?,phone=?,email=?,address=? WHERE id=?', [...$values,$id]);
-                if (!fetch_one('SELECT id FROM suppliers WHERE id=?', [$id])) throw new DomainException('Supplier does not exist.');
-            } else execute_sql('INSERT INTO suppliers (name,company_name,phone,email,address) VALUES (?,?,?,?,?)', $values);
-            flash('success','Supplier saved successfully.'); break;
+                execute_sql('UPDATE suppliers SET name = ?, company_name = ?, phone = ?, email = ?, address = ? WHERE id = ?', [...$values, $id]);
+                if (!fetch_one('SELECT id FROM suppliers WHERE id = ?', [$id])) {
+                    throw new DomainException('Supplier does not exist.');
+                }
+            } else {
+                execute_sql('INSERT INTO suppliers (name, company_name, phone, email, address) VALUES (?, ?, ?, ?, ?)', $values);
+            }
+            flash('success', 'Supplier saved successfully.');
+            redirect('medicines', ['tab' => 'suppliers']);
+            break;
+
         case 'supplier_delete':
             $id = positive_int($_POST['id'] ?? 0, 'Supplier ID');
-            if ((int)scalar('SELECT COUNT(*) FROM medicines WHERE supplier_id=?', [$id]) > 0) throw new DomainException('This supplier is used by medicines and cannot be deleted.');
-            execute_sql('DELETE FROM suppliers WHERE id=?', [$id]);
-            flash('success','Supplier deleted.'); break;
+            if ((int)scalar('SELECT COUNT(*) FROM medicines WHERE supplier_id = ?', [$id]) > 0) {
+                throw new DomainException('This supplier is used by medicines and cannot be deleted.');
+            }
+            execute_sql('DELETE FROM suppliers WHERE id = ?', [$id]);
+            flash('success', 'Supplier deleted successfully.');
+            redirect('medicines', ['tab' => 'suppliers']);
+            break;
+
         case 'medicine_save':
             $id = (int)($_POST['id'] ?? 0);
             $fields = [
-                'name' => required_text('name',120), 'generic_name' => required_text('generic_name',120),
-                'brand_name' => optional_text('brand_name',120), 'batch_number' => required_text('batch_number',60),
-                'medicine_type' => (string)($_POST['medicine_type'] ?? ''),
-                'purchase_price' => price_value($_POST['purchase_price'] ?? '', 'Purchase price'),
-                'selling_price' => price_value($_POST['selling_price'] ?? '', 'Selling price'),
-                'quantity' => positive_int($_POST['quantity'] ?? '', 'Quantity',true),
-                'minimum_stock_level' => positive_int($_POST['minimum_stock_level'] ?? '', 'Minimum stock',true),
-                'manufacturing_date' => optional_text('manufacturing_date',10),
-                'expiry_date' => required_text('expiry_date',10),
+                'name'                  => required_text('name', 120),
+                'generic_name'          => required_text('generic_name', 120),
+                'brand_name'            => optional_text('brand_name', 120),
+                'batch_number'          => required_text('batch_number', 60),
+                'medicine_type'         => (string)($_POST['medicine_type'] ?? ''),
+                'purchase_price'        => price_value($_POST['purchase_price'] ?? '', 'Purchase price'),
+                'selling_price'         => price_value($_POST['selling_price'] ?? '', 'Selling price'),
+                'quantity'              => positive_int($_POST['quantity'] ?? '', 'Quantity', true),
+                'minimum_stock_level'   => positive_int($_POST['minimum_stock_level'] ?? '', 'Minimum stock', true),
+                'manufacturing_date'    => optional_text('manufacturing_date', 10),
+                'expiry_date'           => required_text('expiry_date', 10),
                 'prescription_required' => isset($_POST['prescription_required']) ? 1 : 0,
-                'category_id' => positive_int($_POST['category_id'] ?? '', 'Category ID'),
-                'supplier_id' => positive_int($_POST['supplier_id'] ?? '', 'Supplier ID'),
+                'category_id'           => positive_int($_POST['category_id'] ?? '', 'Category ID'),
+                'supplier_id'           => positive_int($_POST['supplier_id'] ?? '', 'Supplier ID'),
             ];
-            if (!array_key_exists($fields['medicine_type'], medicine_types())) throw new DomainException('Select a valid medicine type.');
-            foreach (['manufacturing_date','expiry_date'] as $key) {
+
+            if (!array_key_exists($fields['medicine_type'], medicine_types())) {
+                throw new DomainException('Select a valid medicine type.');
+            }
+
+            foreach (['manufacturing_date', 'expiry_date'] as $key) {
                 if ($fields[$key] !== null) {
                     $date = DateTimeImmutable::createFromFormat('!Y-m-d', $fields[$key]);
-                    if (!$date || $date->format('Y-m-d') !== $fields[$key]) throw new DomainException('Enter a valid ' . str_replace('_',' ', $key) . '.');
+                    if (!$date || $date->format('Y-m-d') !== $fields[$key]) {
+                        throw new DomainException('Enter a valid ' . str_replace('_', ' ', $key) . '.');
+                    }
                 }
             }
-            if ($fields['manufacturing_date'] !== null && $fields['expiry_date'] <= $fields['manufacturing_date']) throw new DomainException('Expiry date must be after manufacturing date.');
-            if (!fetch_one('SELECT id FROM categories WHERE id=?',[$fields['category_id']]) || !fetch_one('SELECT id FROM suppliers WHERE id=?',[$fields['supplier_id']])) throw new DomainException('Choose an existing category and supplier.');
-            $existing = fetch_one('SELECT id FROM medicines WHERE LOWER(batch_number) = LOWER(?) AND id<>?', [$fields['batch_number'], $id]);
-            if ($existing) throw new DomainException('Another medicine already uses this batch number.');
+
+            if ($fields['manufacturing_date'] !== null && $fields['expiry_date'] <= $fields['manufacturing_date']) {
+                throw new DomainException('Expiry date must be after manufacturing date.');
+            }
+
+            if (!fetch_one('SELECT id FROM categories WHERE id = ?', [$fields['category_id']]) || !fetch_one('SELECT id FROM suppliers WHERE id = ?', [$fields['supplier_id']])) {
+                throw new DomainException('Choose an existing category and supplier.');
+            }
+
+            $existing = fetch_one('SELECT id FROM medicines WHERE LOWER(batch_number) = LOWER(?) AND id <> ?', [$fields['batch_number'], $id]);
+            if ($existing) {
+                throw new DomainException('Another medicine already uses this batch number.');
+            }
+
             $names = array_keys($fields);
             if ($id) {
-                if (!fetch_one('SELECT id FROM medicines WHERE id=?',[$id])) throw new DomainException('Medicine not found.');
-                $set = implode(', ', array_map(fn($key) => "$key=?", $names));
-                execute_sql("UPDATE medicines SET $set WHERE id=?", [...array_values($fields),$id]);
+                if (!fetch_one('SELECT id FROM medicines WHERE id = ?', [$id])) {
+                    throw new DomainException('Medicine not found.');
+                }
+                $set = implode(', ', array_map(fn($key) => "$key = ?", $names));
+                execute_sql("UPDATE medicines SET $set WHERE id = ?", [...array_values($fields), $id]);
             } else {
-                $columns = implode(',',$names);
-                $holders = implode(',',array_fill(0,count($names),'?'));
-                execute_sql("INSERT INTO medicines ($columns) VALUES ($holders)",array_values($fields));
+                $columns = implode(',', $names);
+                $holders = implode(',', array_fill(0, count($names), '?'));
+                execute_sql("INSERT INTO medicines ($columns) VALUES ($holders)", array_values($fields));
             }
-            flash('success','Medicine saved successfully.'); break;
+
+            flash('success', 'Medicine saved successfully.');
+            redirect('medicines', ['tab' => 'inventory']);
+            break;
+
         case 'medicine_toggle':
-            $id = positive_int($_POST['id'] ?? 0,'Medicine ID');
-            $medicine = fetch_one('SELECT id,active FROM medicines WHERE id=?',[$id]);
-            if (!$medicine) throw new DomainException('Medicine not found.');
-            execute_sql('UPDATE medicines SET active=? WHERE id=?',[(int)!$medicine['active'],$id]);
-            flash('success', $medicine['active'] ? 'Medicine deactivated.' : 'Medicine activated.'); break;
+            $id = positive_int($_POST['id'] ?? 0, 'Medicine ID');
+            $medicine = fetch_one('SELECT id, active FROM medicines WHERE id = ?', [$id]);
+            if (!$medicine) {
+                throw new DomainException('Medicine not found.');
+            }
+            execute_sql('UPDATE medicines SET active = ? WHERE id = ?', [(int)!$medicine['active'], $id]);
+            flash('success', $medicine['active'] ? 'Medicine deactivated.' : 'Medicine activated.');
+            redirect('medicines', ['tab' => 'inventory']);
+            break;
+
         case 'user_create':
-            $fullName = required_text('full_name',80);
-            $username = required_text('username',50);
+            $fullName = required_text('full_name', 80);
+            $username = required_text('username', 50);
             $password = (string)($_POST['password'] ?? '');
             $role = (string)($_POST['role'] ?? '');
-            if (!preg_match('/^[A-Za-z0-9_.-]{3,50}$/',$username)) throw new DomainException('Username must contain 3–50 letters, numbers, periods, underscores or hyphens.');
-            if (strlen($password) < 8 || strlen($password) > 72) throw new DomainException('Password must contain 8–72 characters.');
-            if (!in_array($role,['ADMIN','STAFF'],true)) throw new DomainException('Invalid role.');
-            execute_sql('INSERT INTO app_users (full_name,username,password,role,enabled) VALUES (?,?,?,?,?)',[$fullName,$username,password_hash($password,PASSWORD_BCRYPT),$role,isset($_POST['enabled'])?1:0]);
-            flash('success','User account created.'); break;
+
+            if (!preg_match('/^[A-Za-z0-9_.-]{3,50}$/', $username)) {
+                throw new DomainException('Username must contain 3–50 letters, numbers, periods, underscores or hyphens.');
+            }
+            if (strlen($password) < 8 || strlen($password) > 72) {
+                throw new DomainException('Password must contain 8–72 characters.');
+            }
+            if (!in_array($role, ['ADMIN', 'STAFF'], true)) {
+                throw new DomainException('Invalid role.');
+            }
+
+            execute_sql(
+                'INSERT INTO app_users (full_name, username, password, role, enabled) VALUES (?, ?, ?, ?, ?)',
+                [$fullName, $username, password_hash($password, PASSWORD_BCRYPT), $role, isset($_POST['enabled']) ? 1 : 1]
+            );
+            flash('success', 'User account created successfully.');
+            redirect('dashboard');
+            break;
+
         case 'user_toggle':
-            $id = positive_int($_POST['id'] ?? 0,'User ID');
-            if ($id === (int)user()['id']) throw new DomainException('You cannot disable your own account.');
-            $target = fetch_one('SELECT id, enabled, role FROM app_users WHERE id=?',[$id]);
-            if (!$target) throw new DomainException('User not found.');
-            if ($target['role'] === 'ADMIN' && (int)$target['enabled'] && (int)scalar("SELECT COUNT(*) FROM app_users WHERE role='ADMIN' AND enabled=1") <= 1) throw new DomainException('You cannot disable the last active administrator.');
-            execute_sql('UPDATE app_users SET enabled=? WHERE id=?',[(int)!$target['enabled'],$id]);
-            flash('success','User status updated.'); break;
+            $id = positive_int($_POST['id'] ?? 0, 'User ID');
+            if ($id === (int)user()['id']) {
+                throw new DomainException('You cannot disable your own account.');
+            }
+            $target = fetch_one('SELECT id, enabled, role FROM app_users WHERE id = ?', [$id]);
+            if (!$target) {
+                throw new DomainException('User not found.');
+            }
+            if ($target['role'] === 'ADMIN' && (int)$target['enabled'] && (int)scalar("SELECT COUNT(*) FROM app_users WHERE role = 'ADMIN' AND enabled = 1") <= 1) {
+                throw new DomainException('You cannot disable the last active administrator.');
+            }
+            execute_sql('UPDATE app_users SET enabled = ? WHERE id = ?', [(int)!$target['enabled'], $id]);
+            flash('success', 'User status updated.');
+            redirect('dashboard');
+            break;
+
         case 'sale_create':
-            $customer = optional_text('customer_name',100);
-            $phone = optional_text('customer_phone',30);
+            $customer = optional_text('customer_name', 100);
+            $phone = optional_text('customer_phone', 30);
             $ids = $_POST['medicine_id'] ?? [];
             $qtys = $_POST['quantity'] ?? [];
-            if (!is_array($ids) || !is_array($qtys) || count($ids) !== count($qtys) || count($ids) < 1 || count($ids) > 40) throw new DomainException('Add between 1 and 40 medicine rows.');
+
+            if (!is_array($ids) || !is_array($qtys) || count($ids) !== count($qtys) || count($ids) < 1 || count($ids) > 40) {
+                throw new DomainException('Add between 1 and 40 medicine rows.');
+            }
+
             $requested = [];
             foreach ($ids as $i => $rawId) {
                 if ((string)$rawId === '') continue;
-                $medicineId = positive_int($rawId,'Medicine ID');
-                $quantity = positive_int($qtys[$i] ?? 0,'Sale quantity');
+                $medicineId = positive_int($rawId, 'Medicine ID');
+                $quantity = positive_int($qtys[$i] ?? 0, 'Sale quantity');
                 $requested[$medicineId] = ($requested[$medicineId] ?? 0) + $quantity;
-                if ($requested[$medicineId] > 1000000) throw new DomainException('Requested quantity is too high.');
+                if ($requested[$medicineId] > 1000000) {
+                    throw new DomainException('Requested quantity is too high.');
+                }
             }
-            if (!$requested) throw new DomainException('Add at least one medicine to the sale.');
+
+            if (!$requested) {
+                throw new DomainException('Add at least one medicine to the sale.');
+            }
+
             ksort($requested, SORT_NUMERIC);
-            $discount = (int)round((float)price_value($_POST['discount'] ?? '0','Discount',true) * 100);
+            $discount = (int)round((float)price_value($_POST['discount'] ?? '0', 'Discount', true) * 100);
+
             $pdo = db();
             $pdo->beginTransaction();
             try {
@@ -289,30 +424,57 @@ try {
                     $unitCents = (int)round((float)$medicine['selling_price'] * 100);
                     $lineCents = $unitCents * $quantity;
                     $subtotal += $lineCents;
-                    $lines[] = [$medicineId,$quantity,$unitCents,$lineCents];
+                    $lines[] = [$medicineId, $quantity, $unitCents, $lineCents];
                 }
-                if ($discount > $subtotal) throw new DomainException('Discount cannot exceed the subtotal.');
+
+                if ($discount > $subtotal) {
+                    throw new DomainException('Discount cannot exceed the subtotal.');
+                }
+
                 $invoice = 'INV-' . date('YmdHis') . '-' . strtoupper(bin2hex(random_bytes(3)));
-                $stmt = $pdo->prepare('INSERT INTO sales (invoice_number,sale_date,customer_name,customer_phone,subtotal,discount,total_amount,sold_by_id) VALUES (?,NOW(),?,?,?,?,?,?)');
-                $stmt->execute([$invoice,$customer,$phone,number_format($subtotal/100,2,'.',''),number_format($discount/100,2,'.',''),number_format(($subtotal-$discount)/100,2,'.',''),user()['id']]);
+                $stmt = $pdo->prepare('INSERT INTO sales (invoice_number, sale_date, customer_name, customer_phone, subtotal, discount, total_amount, sold_by_id) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)');
+                $stmt->execute([
+                    $invoice,
+                    $customer,
+                    $phone,
+                    number_format($subtotal / 100, 2, '.', ''),
+                    number_format($discount / 100, 2, '.', ''),
+                    number_format(($subtotal - $discount) / 100, 2, '.', ''),
+                    user()['id']
+                ]);
                 $saleId = (int)$pdo->lastInsertId();
-                $add = $pdo->prepare('INSERT INTO sale_items(sale_id,medicine_id,quantity,unit_price,line_total) VALUES (?,?,?,?,?)');
-                foreach ($lines as [$medicineId,$quantity,$unitCents,$lineCents]) {
-                    $add->execute([$saleId,$medicineId,$quantity,number_format($unitCents/100,2,'.',''),number_format($lineCents/100,2,'.','')]);
+
+                $add = $pdo->prepare('INSERT INTO sale_items (sale_id, medicine_id, quantity, unit_price, line_total) VALUES (?, ?, ?, ?, ?)');
+                foreach ($lines as [$medicineId, $quantity, $unitCents, $lineCents]) {
+                    $add->execute([
+                        $saleId,
+                        $medicineId,
+                        $quantity,
+                        number_format($unitCents / 100, 2, '.', ''),
+                        number_format($lineCents / 100, 2, '.', '')
+                    ]);
                 }
+
                 $pdo->commit();
-            } catch (Throwable $ex) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $ex; }
-            flash('success','Sale completed successfully. Invoice is ready.');
-            redirect('invoice',['id'=>$saleId]);
+            } catch (Throwable $ex) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                throw $ex;
+            }
+
+            flash('success', 'Sale completed successfully. Invoice is ready.');
+            redirect('invoice', ['id' => $saleId]);
+            break;
+
         default:
-            throw new DomainException('Unknown action.');
+            throw new DomainException('Unknown action: ' . htmlspecialchars($action));
     }
-    redirect($fallback);
 } catch (DomainException $ex) {
     flash('error', $ex->getMessage());
 } catch (PDOException $ex) {
     $mysqlCode = $ex->errorInfo[1] ?? 0;
-    $message = match($mysqlCode) {
+    $message = match ($mysqlCode) {
         1062 => 'This name, username or batch number is already in use.',
         1451 => 'This record is in use and cannot be deleted.',
         1452 => 'Please select valid related records.',
@@ -320,4 +482,5 @@ try {
     };
     flash('error', $message);
 }
+
 redirect($fallback);

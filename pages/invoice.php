@@ -6,6 +6,8 @@
 
 declare(strict_types=1);
 
+require_login();
+
 $id = (int)($_GET['id'] ?? 0);
 $orderId = (int)($_GET['order_id'] ?? 0);
 
@@ -20,8 +22,21 @@ if ($id) {
 }
 
 if (!$sale) {
-    echo '<div class="alert alert-danger">Invoice not found.</div>';
+    echo '<div class="alert alert-danger shadow-sm">Invoice record not found.</div>';
     return;
+}
+
+// Strict IDOR Protection: Customers may only view invoices for their own orders
+if (is_customer()) {
+    if (empty($sale['order_id'])) {
+        flash('danger', 'Access denied: You are not authorized to view this invoice.');
+        redirect('orders');
+    }
+    $order = fetch_one('SELECT customer_id FROM orders WHERE id = ?', [$sale['order_id']]);
+    if (!$order || (int)$order['customer_id'] !== (int)user()['id']) {
+        flash('danger', 'Access denied: You are not authorized to view this invoice.');
+        redirect('orders');
+    }
 }
 
 $items = fetch_all('SELECT si.*, m.name AS medicine_name, m.generic_name, m.batch_number FROM sale_items si JOIN medicines m ON m.id = si.medicine_id WHERE si.sale_id = ? ORDER BY si.id', [$id]);
@@ -29,12 +44,18 @@ $items = fetch_all('SELECT si.*, m.name AS medicine_name, m.generic_name, m.batc
 
 <!-- Action Bar (Hidden during printing) -->
 <div class="d-flex justify-content-end gap-2 mb-3 no-print">
-    <a href="<?= e(url('sales')) ?>" class="btn btn-light border">
-        <i class="bi bi-arrow-left me-1"></i>Sales History
-    </a>
-    <a href="<?= e(url('sale_form')) ?>" class="btn btn-outline-primary">
-        <i class="bi bi-cart-plus me-1"></i>New Sale
-    </a>
+    <?php if (is_staff_or_admin()): ?>
+        <a href="index.php?page=sales&tab=history" class="btn btn-light border">
+            <i class="bi bi-arrow-left me-1"></i>Sales History
+        </a>
+        <a href="index.php?page=sales&tab=pos" class="btn btn-outline-primary">
+            <i class="bi bi-cart-plus me-1"></i>New Sale
+        </a>
+    <?php else: ?>
+        <a href="index.php?page=order_detail&id=<?= (int)$sale['order_id'] ?>" class="btn btn-light border">
+            <i class="bi bi-arrow-left me-1"></i>Back to Order
+        </a>
+    <?php endif; ?>
     <button type="button" onclick="window.print()" class="btn btn-primary">
         <i class="bi bi-printer me-1"></i>Print Invoice
     </button>

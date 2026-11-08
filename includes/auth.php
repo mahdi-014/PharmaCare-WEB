@@ -111,8 +111,8 @@ function require_admin(): void
     require_login();
     if (!is_admin()) {
         http_response_code(403);
-        include dirname(__DIR__) . '/pages/forbidden.php';
-        exit;
+        flash('error', 'Access denied. Administrator privileges required.');
+        redirect(is_customer() ? 'catalog' : 'dashboard');
     }
 }
 
@@ -124,8 +124,8 @@ function require_staff_or_admin(): void
     require_login();
     if (!is_staff_or_admin()) {
         http_response_code(403);
-        include dirname(__DIR__) . '/pages/forbidden.php';
-        exit;
+        flash('error', 'Access denied. Staff or Administrator privileges required.');
+        redirect('catalog');
     }
 }
 
@@ -137,7 +137,7 @@ function require_customer(): void
     require_login();
     if (!is_customer()) {
         http_response_code(403);
-        include dirname(__DIR__) . '/pages/forbidden.php';
-        exit;
+        flash('error', 'Access denied. Customer account required for this action.');
+        redirect('dashboard');
     }
 }

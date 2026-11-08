@@ -1,9 +1,7 @@
 <?php
 /**
- * PharmaCare — Order Domain Model
- * Encapsulates order persistence, queries, item associations, and status history.
- *
- * Namespace: App\Models
+ * CIS324 Web Engineering - Topic 13: Pharmacy Management System
+ * Consolidated Domain Models: User, Medicine, Order (Q4 & Q8)
  */
 
 declare(strict_types=1);
@@ -12,11 +10,188 @@ namespace App\Models;
 
 use PDO;
 
+/**
+ * User Domain Model
+ * Authentication, profile persistence, and customer registration.
+ */
+class User
+{
+    public static function findById(int $id): ?array
+    {
+        $stmt = db()->prepare('SELECT id, full_name, username, email, phone, address, role, enabled, created_at FROM app_users WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public static function findByUsernameOrEmail(string $identifier): ?array
+    {
+        $stmt = db()->prepare('SELECT id, full_name, username, email, phone, address, password, role, enabled FROM app_users WHERE username = ? OR email = ? LIMIT 1');
+        $stmt->execute([$identifier, $identifier]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public static function findByUsername(string $username): ?array
+    {
+        return self::findByUsernameOrEmail($username);
+    }
+
+    public static function createCustomer(array $data): int
+    {
+        $hash = password_hash($data['password'], PASSWORD_BCRYPT);
+        $stmt = db()->prepare(
+            'INSERT INTO app_users (full_name, username, email, phone, address, password, role, enabled) 
+             VALUES (?, ?, ?, ?, ?, ?, "CUSTOMER", 1)'
+        );
+        $stmt->execute([
+            $data['full_name'],
+            $data['username'],
+            $data['email'],
+            $data['phone'] ?? null,
+            $data['address'] ?? null,
+            $hash
+        ]);
+        return (int)db()->lastInsertId();
+    }
+
+    public static function updateProfile(int $id, array $data): void
+    {
+        $stmt = db()->prepare(
+            'UPDATE app_users 
+             SET full_name = ?, email = ?, phone = ?, address = ? 
+             WHERE id = ?'
+        );
+        $stmt->execute([
+            $data['full_name'],
+            $data['email'],
+            $data['phone'] ?? null,
+            $data['address'] ?? null,
+            $id
+        ]);
+    }
+
+    public static function existsByUsername(string $username, ?int $excludeId = null): bool
+    {
+        $sql = 'SELECT COUNT(*) FROM app_users WHERE username = ?';
+        $params = [$username];
+        if ($excludeId !== null) {
+            $sql .= ' AND id != ?';
+            $params[] = $excludeId;
+        }
+        $stmt = db()->prepare($sql);
+        $stmt->execute($params);
+        return ((int)$stmt->fetchColumn()) > 0;
+    }
+
+    public static function existsByEmail(string $email, ?int $excludeId = null): bool
+    {
+        $sql = 'SELECT COUNT(*) FROM app_users WHERE email = ?';
+        $params = [$email];
+        if ($excludeId !== null) {
+            $sql .= ' AND id != ?';
+            $params[] = $excludeId;
+        }
+        $stmt = db()->prepare($sql);
+        $stmt->execute($params);
+        return ((int)$stmt->fetchColumn()) > 0;
+    }
+}
+
+/**
+ * Medicine Domain Model
+ * Inventory queries, batch retrieval, and stock helpers.
+ */
+class Medicine
+{
+    public static function baseQuery(): string
+    {
+        return medicine_query();
+    }
+
+    public static function findById(int $id): ?array
+    {
+        $stmt = db()->prepare(self::baseQuery() . ' WHERE m.id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public static function findActive(string $keyword = '', int $categoryId = 0): array
+    {
+        $sql = self::baseQuery() . ' WHERE m.active = 1 AND m.expiry_date >= CURDATE() AND m.quantity > 0';
+        $params = [];
+
+        if ($keyword !== '') {
+            $sql .= ' AND (m.name LIKE ? OR m.generic_name LIKE ? OR m.brand_name LIKE ?)';
+            $needle = '%' . $keyword . '%';
+            array_push($params, $needle, $needle, $needle);
+        }
+
+        if ($categoryId > 0) {
+            $sql .= ' AND m.category_id = ?';
+            $params[] = $categoryId;
+        }
+
+        $sql .= ' ORDER BY m.name ASC, m.batch_number ASC';
+        $stmt = db()->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public static function findActiveByName(PDO $pdo, string $name): array
+    {
+        $stmt = $pdo->prepare(
+            'SELECT id, name, batch_number, quantity, selling_price, expiry_date 
+             FROM medicines 
+             WHERE name = ? AND active = 1 AND expiry_date >= CURDATE() AND quantity > 0 
+             ORDER BY expiry_date ASC, id ASC 
+             FOR UPDATE'
+        );
+        $stmt->execute([$name]);
+        return $stmt->fetchAll();
+    }
+
+    public static function lockBatchForUpdate(PDO $pdo, int $batchId): ?array
+    {
+        $stmt = $pdo->prepare(
+            'SELECT id, name, generic_name, brand_name, batch_number, medicine_type, 
+                    selling_price, purchase_price, quantity, minimum_stock_level, 
+                    expiry_date, prescription_required, active 
+             FROM medicines 
+             WHERE id = ? 
+             FOR UPDATE'
+        );
+        $stmt->execute([$batchId]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public static function decrementStock(PDO $pdo, int $batchId, int $quantity): void
+    {
+        $stmt = $pdo->prepare('UPDATE medicines SET quantity = quantity - ? WHERE id = ?');
+        $stmt->execute([$quantity, $batchId]);
+    }
+
+    public static function incrementStock(PDO $pdo, int $batchId, int $quantity): void
+    {
+        $stmt = $pdo->prepare('UPDATE medicines SET quantity = quantity + ? WHERE id = ?');
+        $stmt->execute([$quantity, $batchId]);
+    }
+
+    public static function getAllCategories(): array
+    {
+        $stmt = db()->query('SELECT id, name FROM categories ORDER BY name ASC');
+        return $stmt->fetchAll();
+    }
+}
+
+/**
+ * Order Domain Model
+ * Online customer orders, line items, and audit lifecycle progression.
+ */
 class Order
 {
-    /**
-     * Fetch order record by its primary key ID.
-     */
     public static function findById(int $id): ?array
     {
         $stmt = db()->prepare('SELECT * FROM orders WHERE id = ? LIMIT 1');
@@ -25,9 +200,6 @@ class Order
         return $row ?: null;
     }
 
-    /**
-     * Fetch order record by unique human-readable order number.
-     */
     public static function findByOrderNumber(string $orderNumber): ?array
     {
         $stmt = db()->prepare('SELECT * FROM orders WHERE order_number = ? LIMIT 1');
@@ -36,9 +208,6 @@ class Order
         return $row ?: null;
     }
 
-    /**
-     * Fetch customer's orders with item counts and summary info.
-     */
     public static function findByCustomerId(int $customerId, string $statusFilter = ''): array
     {
         $sql = 'SELECT o.*, COUNT(oi.id) AS total_items, COUNT(oi.id) AS item_count 
@@ -58,9 +227,6 @@ class Order
         return $stmt->fetchAll();
     }
 
-    /**
-     * Fetch all orders for staff fulfillment queue with optional status, payment, and search filters.
-     */
     public static function findAll(string $statusFilter = '', string $paymentFilter = '', string $search = ''): array
     {
         $sql = 'SELECT o.*, COUNT(oi.id) AS total_items, COUNT(oi.id) AS item_count 
@@ -91,9 +257,6 @@ class Order
         return $stmt->fetchAll();
     }
 
-    /**
-     * Fetch line items associated with an order.
-     */
     public static function getItems(int $orderId): array
     {
         $stmt = db()->prepare(
@@ -108,9 +271,6 @@ class Order
         return $stmt->fetchAll();
     }
 
-    /**
-     * Fetch prescription record for an order.
-     */
     public static function getPrescription(int $orderId): ?array
     {
         $stmt = db()->prepare(
@@ -124,9 +284,6 @@ class Order
         return $row ?: null;
     }
 
-    /**
-     * Fetch chronological lifecycle audit history for an order.
-     */
     public static function getHistory(int $orderId): array
     {
         $stmt = db()->prepare(
@@ -140,18 +297,12 @@ class Order
         return $stmt->fetchAll();
     }
 
-    /**
-     * Count active pending orders for dispensary notifications.
-     */
     public static function countPending(): int
     {
         $stmt = db()->query("SELECT COUNT(*) FROM orders WHERE order_status IN ('PENDING', 'CONFIRMED', 'PROCESSING')");
         return (int)$stmt->fetchColumn();
     }
 
-    /**
-     * Insert a new order within an active transaction.
-     */
     public static function create(PDO $pdo, array $data): int
     {
         $stmt = $pdo->prepare(
@@ -178,9 +329,6 @@ class Order
         return (int)$pdo->lastInsertId();
     }
 
-    /**
-     * Insert order line items within an active transaction.
-     */
     public static function addItems(PDO $pdo, int $orderId, array $items): void
     {
         $stmt = $pdo->prepare(
@@ -200,9 +348,6 @@ class Order
         }
     }
 
-    /**
-     * Insert prescription record within an active transaction.
-     */
     public static function addPrescription(PDO $pdo, int $orderId, int $customerId, array $rxData): int
     {
         $stmt = $pdo->prepare(
@@ -221,9 +366,6 @@ class Order
         return (int)$pdo->lastInsertId();
     }
 
-    /**
-     * Record a lifecycle transition into audit history.
-     */
     public static function addStatusHistory(PDO $pdo, int $orderId, ?string $prevStatus, string $newStatus, ?int $userId, ?string $remarks): void
     {
         $stmt = $pdo->prepare(
@@ -239,36 +381,24 @@ class Order
         ]);
     }
 
-    /**
-     * Update order status.
-     */
     public static function updateStatus(PDO $pdo, int $orderId, string $newStatus): void
     {
         $stmt = $pdo->prepare('UPDATE orders SET order_status = ? WHERE id = ?');
         $stmt->execute([$newStatus, $orderId]);
     }
 
-    /**
-     * Synchronize payment status.
-     */
     public static function markPaymentStatus(PDO $pdo, int $orderId, string $paymentStatus): void
     {
         $stmt = $pdo->prepare('UPDATE orders SET payment_status = ? WHERE id = ?');
         $stmt->execute([$paymentStatus, $orderId]);
     }
 
-    /**
-     * Mark stock as restored for an order upon cancellation.
-     */
     public static function markStockRestored(PDO $pdo, int $orderId): void
     {
         $stmt = $pdo->prepare('UPDATE orders SET stock_restored = 1 WHERE id = ?');
         $stmt->execute([$orderId]);
     }
 
-    /**
-     * Update prescription status and reviewer action.
-     */
     public static function updatePrescriptionStatus(PDO $pdo, int $orderId, string $status, ?int $reviewerId, ?string $notes): void
     {
         $rxStmt = $pdo->prepare(
@@ -283,9 +413,6 @@ class Order
         $orderStmt->execute([$orderPrescriptionStatus, $orderId]);
     }
 
-    /**
-     * Retrieve linked sale ID if this order has been bridged upon completion.
-     */
     public static function getLinkedSaleId(PDO $pdo, int $orderId): ?int
     {
         $stmt = $pdo->prepare('SELECT id FROM sales WHERE order_id = ? LIMIT 1');
@@ -294,3 +421,10 @@ class Order
         return $val !== false ? (int)$val : null;
     }
 }
+
+namespace App;
+
+// Global Namespace Aliases for Convenience
+class_alias(\App\Models\User::class, 'User');
+class_alias(\App\Models\Medicine::class, 'Medicine');
+class_alias(\App\Models\Order::class, 'Order');

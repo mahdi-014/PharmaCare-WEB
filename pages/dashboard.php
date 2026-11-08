@@ -35,7 +35,7 @@ $alerts = $summary['inventory_alerts'];
                 <span class="badge text-bg-warning ms-1"><?= $ops['pending_orders'] ?></span>
             <?php endif; ?>
         </a>
-        <a href="<?= e(url('sale_form')) ?>" class="btn btn-primary shadow-sm">
+        <a href="<?= e(url('sales')) ?>" class="btn btn-primary shadow-sm">
             <i class="bi bi-cart-plus me-1"></i>Create New Sale
         </a>
     </div>
@@ -471,7 +471,7 @@ $alerts = $summary['inventory_alerts'];
                         </td>
                         <td class="text-center">
                             <?php if (is_admin()): ?>
-                                <a href="<?= e(url('medicine_form', ['id' => $m['id']])) ?>" class="btn btn-sm btn-outline-secondary" title="Edit Batch">
+                                <a href="index.php?page=medicines&tab=medicine_form&id=<?= $m['id'] ?>" class="btn btn-sm btn-outline-secondary" title="Edit Batch">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                             <?php else: ?>
@@ -496,3 +496,110 @@ $alerts = $summary['inventory_alerts'];
         </table>
     </div>
 </div>
+
+<?php if (is_admin()): 
+    $allUsers = fetch_all('SELECT id, full_name, username, role, enabled FROM app_users ORDER BY full_name');
+?>
+<!-- System User Administration (Admin Only) -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <div>
+            <strong class="d-flex align-items-center"><i class="bi bi-people-fill me-2 text-primary"></i>Staff &amp; Admin User Administration</strong>
+            <div class="small text-secondary">Manage personnel credentials and active system authorizations</div>
+        </div>
+        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#createUserCollapse">
+            <i class="bi bi-person-plus me-1"></i>Create New User
+        </button>
+    </div>
+
+    <!-- Collapsible User Creation Form -->
+    <div class="collapse border-bottom bg-light" id="createUserCollapse">
+        <div class="card-body">
+            <form action="actions.php" method="post" class="row g-3">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="user_create">
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold" for="u_fullname">Full Name *</label>
+                    <input id="u_fullname" name="full_name" class="form-control form-control-sm" maxlength="80" required placeholder="e.g. Dr. Mahdi Hasan">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold" for="u_user">Username *</label>
+                    <input id="u_user" name="username" class="form-control form-control-sm" minlength="3" maxlength="50" pattern="[A-Za-z0-9_.-]+" autocomplete="off" required placeholder="e.g. mahdi.staff">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold" for="u_pwd">Password *</label>
+                    <input id="u_pwd" type="password" name="password" class="form-control form-control-sm" minlength="8" maxlength="72" autocomplete="new-password" required placeholder="Min 8 characters">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold" for="u_r">Role *</label>
+                    <select class="form-select form-select-sm" name="role" id="u_r" required>
+                        <option value="STAFF">STAFF (Dispensary)</option>
+                        <option value="ADMIN">ADMIN (Full)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success btn-sm w-100">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Directory Table -->
+    <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>User / Full Name</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Account Status</th>
+                    <th class="text-end">Status Toggle</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($allUsers as $u): ?>
+                    <tr>
+                        <td>
+                            <strong class="text-dark"><?= e($u['full_name']) ?></strong>
+                            <?php if ((int)$u['id'] === (int)user()['id']): ?>
+                                <span class="badge text-bg-light border text-muted ms-1">You</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="font-monospace text-muted small">@<?= e($u['username']) ?></td>
+                        <td>
+                            <span class="badge text-bg-<?= $u['role'] === 'ADMIN' ? 'primary' : ($u['role'] === 'STAFF' ? 'info' : 'secondary') ?>">
+                                <?= e($u['role']) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge text-bg-<?= $u['enabled'] ? 'success' : 'danger' ?>">
+                                <?= $u['enabled'] ? 'Active' : 'Disabled' ?>
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <?php if ((int)$u['id'] !== (int)user()['id']): ?>
+                                <form action="actions.php" method="post" class="d-inline">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="action" value="user_toggle">
+                                    <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+                                    <button class="btn btn-sm btn-outline-<?= $u['enabled'] ? 'danger' : 'success' ?>"
+                                            onclick="return confirm('Toggle status for user <?= e($u['username']) ?>?');">
+                                        <?= $u['enabled'] ? 'Disable' : 'Enable' ?>
+                                    </button>
+                                </form>
+                            <?php else: ?>
+                                <span class="text-muted small">Current Session</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>

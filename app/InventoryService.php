@@ -1,11 +1,10 @@
 <?php
 /**
- * PharmaCare — Unified Inventory Service (Domain Service)
- * Centralized stock deduction and restoration service for POS sales and Customer Online Orders.
- * Enforces pessimistic concurrency locking (SELECT ... FOR UPDATE) to eliminate race conditions
- * and maintain relational inventory integrity across concurrent transactions.
+ * CIS324 Web Engineering - Topic 13: Pharmacy Management System
+ * Unified Inventory Management & Concurrency Locking Service (Q4 & Q8)
  *
- * Namespace: App\Services
+ * Enforces pessimistic concurrency locking (SELECT ... FOR UPDATE) to eliminate
+ * race conditions and ensure zero double-deduction across POS sales and online orders.
  */
 
 declare(strict_types=1);
@@ -19,13 +18,6 @@ class InventoryService
 {
     /**
      * Atomically locks a medicine batch and decrements its stock.
-     * Must be called within an active PDO transaction.
-     *
-     * @param PDO $pdo Active PDO connection with open transaction
-     * @param int $batchId Medicine ID / inventory batch identifier
-     * @param int $quantity Quantity to deduct (must be >= 1)
-     * @return array The medicine record with previous and updated stock levels
-     * @throws DomainException If batch not found, inactive, expired, or stock insufficient
      */
     public static function deductBatchStock(PDO $pdo, int $batchId, int $quantity): array
     {
@@ -72,13 +64,6 @@ class InventoryService
 
     /**
      * Atomically restores stock to a medicine batch upon order cancellation.
-     * Must be called within an active PDO transaction.
-     *
-     * @param PDO $pdo Active PDO connection with open transaction
-     * @param int $batchId Medicine ID / inventory batch identifier
-     * @param int $quantity Quantity to restore (must be >= 1)
-     * @return int The updated stock quantity
-     * @throws DomainException If batch not found or quantity invalid
      */
     public static function restoreBatchStock(PDO $pdo, int $batchId, int $quantity): int
     {
@@ -102,13 +87,6 @@ class InventoryService
 
     /**
      * Allocates stock across batches of a medicine using First Expiry, First Out (FEFO).
-     * Must be called within an active PDO transaction.
-     *
-     * @param PDO $pdo Active PDO connection with open transaction
-     * @param int $medicineId Medicine template ID or target medicine ID
-     * @param int $requestedQuantity Total units requested
-     * @return array Array of allocated batch items
-     * @throws DomainException If total available stock across unexpired batches is insufficient
      */
     public static function allocateFefoStock(PDO $pdo, int $medicineId, int $requestedQuantity): array
     {
@@ -124,7 +102,6 @@ class InventoryService
             throw new DomainException("Medicine #{$medicineId} was not found.");
         }
 
-        // Lock all active, unexpired batches sorted by earliest expiry date first
         $batchStmt = $pdo->prepare(
             'SELECT id, name, batch_number, quantity, selling_price, expiry_date 
              FROM medicines 
@@ -162,4 +139,27 @@ class InventoryService
 
         return $allocations;
     }
+}
+
+namespace App;
+
+use PDO;
+
+class_alias(\App\Services\InventoryService::class, 'InventoryService');
+class_alias(\App\Services\InventoryService::class, \App\InventoryService::class);
+
+// Procedural Helper Functions
+function deduct_batch_stock(PDO $pdo, int $batch_id, int $quantity): array
+{
+    return \App\Services\InventoryService::deductBatchStock($pdo, $batch_id, $quantity);
+}
+
+function restore_batch_stock(PDO $pdo, int $batch_id, int $quantity): int
+{
+    return \App\Services\InventoryService::restoreBatchStock($pdo, $batch_id, $quantity);
+}
+
+function allocate_fefo_stock(PDO $pdo, int $medicine_id, int $requested_quantity): array
+{
+    return \App\Services\InventoryService::allocateFefoStock($pdo, $medicine_id, $requested_quantity);
 }

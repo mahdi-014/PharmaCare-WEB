@@ -14,6 +14,11 @@ declare(strict_types=1);
 
 require_login();
 
+if (isset($_GET['download']) && $_GET['download'] === '1') {
+    (new \App\Controller())->downloadPrescription();
+    exit;
+}
+
 $orderId = positive_int($_GET['id'] ?? 0, 'Order ID');
 $order = \App\Models\Order::findById($orderId);
 
@@ -24,9 +29,8 @@ if (!$order) {
 
 // Strict IDOR Protection: Customers may only view their own orders
 if (is_customer() && (int)$order['customer_id'] !== (int)user()['id']) {
-    http_response_code(403);
-    include __DIR__ . '/forbidden.php';
-    exit;
+    flash('danger', 'Access denied: You are not authorized to view this order.');
+    redirect(url('orders'));
 }
 
 // Fetch ordered items
@@ -42,7 +46,26 @@ $currentStatus = (string)$order['order_status'];
 $allowedTransitions = get_allowed_order_transitions($currentStatus);
 $rxRequired = (int)$order['prescription_required'] === 1;
 $rxVerified = $order['prescription_status'] === 'VERIFIED';
+$isConfirmedNotice = isset($_GET['confirmed']) && $_GET['confirmed'] === '1';
 ?>
+
+<?php if ($isConfirmedNotice): ?>
+<div class="card shadow-sm border-0 mb-4" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white;">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 28px;">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+            <div>
+                <h4 class="mb-1 text-white">Order Successfully Placed!</h4>
+                <p class="mb-0 text-white-50 small">
+                    Order Reference: <strong class="text-white"><?= e($order['order_number']) ?></strong> &middot; Placed on <?= e(nice_date($order['created_at'], true)) ?>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <div class="page-intro mb-4 d-flex justify-content-between align-items-center" id="orderTrackerMetadata" data-order-id="<?= (int)$order['id'] ?>" data-terminal="<?= in_array($currentStatus, ['COMPLETED', 'CANCELLED'], true) ? '1' : '0' ?>" data-status="<?= e($currentStatus) ?>">
     <div>
@@ -58,15 +81,9 @@ $rxVerified = $order['prescription_status'] === 'VERIFIED';
         <button id="liveOrderRefreshBtn" class="btn btn-outline-primary btn-sm" type="button" title="Check for live status updates">
             <i class="bi bi-arrow-clockwise me-1"></i>Check Status
         </button>
-        <?php if (is_staff_or_admin()): ?>
-            <a href="<?= e(url('orders')) ?>" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>Back to Orders Queue
-            </a>
-        <?php else: ?>
-            <a href="<?= e(url('my_orders')) ?>" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>Back to My Orders
-            </a>
-        <?php endif; ?>
+        <a href="<?= e(url('orders')) ?>" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Orders
+        </a>
         <button class="btn btn-outline-dark btn-sm" onclick="window.print()">
             <i class="bi bi-printer me-1"></i>Print
         </button>
@@ -344,7 +361,7 @@ $rxVerified = $order['prescription_status'] === 'VERIFIED';
                             <button type="button" class="btn btn-sm btn-primary flex-grow-1" data-bs-toggle="modal" data-bs-target="#rxPreviewModal">
                                 <i class="bi bi-eye me-1"></i>Inspect Inline
                             </button>
-                            <a href="index.php?page=download_prescription&order_id=<?= (int)$order['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open in raw tab">
+                            <a href="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&download=1" target="_blank" class="btn btn-sm btn-outline-secondary" title="Open in raw tab">
                                 <i class="bi bi-box-arrow-up-right"></i>
                             </a>
                         </div>
@@ -445,14 +462,14 @@ $rxVerified = $order['prescription_status'] === 'VERIFIED';
             </div>
             <div class="modal-body p-3 text-center bg-light">
                 <?php if (str_starts_with((string)$prescription['mime_type'], 'image/')): ?>
-                    <img src="index.php?page=download_prescription&order_id=<?= (int)$order['id'] ?>" class="img-fluid rounded shadow-sm border bg-white" alt="Doctor Prescription" style="max-height: 70vh;">
+                    <img src="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&download=1" class="img-fluid rounded shadow-sm border bg-white" alt="Doctor Prescription" style="max-height: 70vh;">
                 <?php elseif ($prescription['mime_type'] === 'application/pdf'): ?>
-                    <iframe src="index.php?page=download_prescription&order_id=<?= (int)$order['id'] ?>" style="width: 100%; height: 70vh; border: none;" class="rounded border bg-white"></iframe>
+                    <iframe src="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&download=1" style="width: 100%; height: 70vh; border: none;" class="rounded border bg-white"></iframe>
                 <?php else: ?>
                     <div class="p-4 bg-white rounded border">
                         <i class="bi bi-file-earmark fs-1 text-secondary mb-2 d-block"></i>
                         <p class="mb-3">Preview unavailable for mime type <code><?= e($prescription['mime_type']) ?></code>.</p>
-                        <a href="index.php?page=download_prescription&order_id=<?= (int)$order['id'] ?>" target="_blank" class="btn btn-primary btn-sm">
+                        <a href="index.php?page=order_detail&id=<?= (int)$order['id'] ?>&download=1" target="_blank" class="btn btn-primary btn-sm">
                             <i class="bi bi-download me-1"></i>Download Document
                         </a>
                     </div>

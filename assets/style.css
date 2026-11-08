@@ -200,7 +200,7 @@ a { text-decoration: none; }
     body { background: #fff; }
     .invoice-sheet { box-shadow: none; max-width: none; padding: 0; border: none; }
 }
-/* PHP edition: small enhancements while preserving the Spring Boot visual identity */
+
 .btn-outline-success { border-width: 1px; }
 .table-responsive { border-radius: 0 0 20px 20px; }
 .form-hint { font-size: .77rem; color: var(--muted); margin-top: 6px; }
@@ -211,5 +211,5 @@ a { text-decoration: none; }
 .data-meta { border-radius: 999px; padding:6px 12px; background:#eaf9f5; color:#0f766e; font-size:.8rem; font-weight:700; }
 .table td .btn { padding:.35rem .6rem; }
 .input-group-text { border:2px solid var(--border-color); border-radius:12px 0 0 12px; }
-.btn:focus-visible,a:focus-visible { outline: 3px solid #16a394; outline-offset: 2px; }
+.btn:focus-visible, a:focus-visible { outline: 3px solid #16a394; outline-offset: 2px; }
 @media (max-width:575px) { .table { min-width:720px; } .invoice-sheet .table { min-width:0; } .invoice-sheet { overflow-x:auto; } }
