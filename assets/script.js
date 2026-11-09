@@ -6,6 +6,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
+    /**
+     * Context-aware HTML escaping helper for dynamic DOM rendering
+     */
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    }
+
     // ==========================================
     // 1. Mobile Sidebar & Global UI
     // ==========================================
@@ -160,13 +170,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const safeBadges = ['success', 'warning', 'danger', 'secondary', 'info', 'primary', 'dark'];
+            const rawCsrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const csrfToken = escapeHtml(rawCsrf);
+
             let html = '';
             medicines.forEach(m => {
                 const rxBadge = m.prescription_required
                     ? '<span class="badge bg-danger ms-1"><i class="bi bi-file-earmark-medical me-1"></i>Rx Required</span>'
                     : '<span class="badge bg-success ms-1">OTC</span>';
 
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                const categoryName = escapeHtml(m.category_name);
+                const name = escapeHtml(m.name);
+                const genericName = escapeHtml(m.generic_name);
+                const dosageForm = escapeHtml(m.dosage_form);
+                const batchNumber = escapeHtml(m.batch_number);
+                const formattedExpiry = escapeHtml(m.formatted_expiry);
+                const formattedPrice = escapeHtml(m.formatted_price);
+                const statusLabel = escapeHtml(m.status_label);
+                const statusBadge = safeBadges.includes(m.status_badge) ? m.status_badge : 'secondary';
+                const id = Number(m.id) || 0;
+                const quantity = Math.max(0, Number(m.quantity) || 0);
 
                 html += `
                     <div class="col-12 col-md-6 col-lg-4 mb-4">
@@ -174,27 +198,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="card-body d-flex flex-direction-column justify-content-between p-4">
                                 <div>
                                     <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <span class="badge bg-light text-dark border">${m.category_name}</span>
+                                        <span class="badge bg-light text-dark border">${categoryName}</span>
                                         ${rxBadge}
                                     </div>
-                                    <h5 class="fw-bold text-dark mb-1">${m.name}</h5>
-                                    <p class="text-muted small mb-2"><em>${m.generic_name}</em> &bull; ${m.dosage_form}</p>
+                                    <h5 class="fw-bold text-dark mb-1">${name}</h5>
+                                    <p class="text-muted small mb-2"><em>${genericName}</em> &bull; ${dosageForm}</p>
                                     <div class="small text-secondary mb-3">
-                                        <span>Batch: <code>${m.batch_number}</code></span><br>
-                                        <span>Expires: ${m.formatted_expiry}</span>
+                                        <span>Batch: <code>${batchNumber}</code></span><br>
+                                        <span>Expires: ${formattedExpiry}</span>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <span class="h4 fw-bold text-primary mb-0">${m.formatted_price}</span>
-                                        <span class="badge bg-${m.status_badge}">${m.status_label} (${m.quantity})</span>
+                                        <span class="h4 fw-bold text-primary mb-0">${formattedPrice}</span>
+                                        <span class="badge bg-${statusBadge}">${statusLabel} (${quantity})</span>
                                     </div>
                                     <form method="post" action="actions.php" class="d-flex gap-2">
                                         <input type="hidden" name="action" value="cart_add">
                                         <input type="hidden" name="_csrf" value="${csrfToken}">
-                                        <input type="hidden" name="medicine_id" value="${m.id}">
-                                        <input type="number" name="quantity" value="1" min="1" max="${m.quantity}" class="form-control text-center" style="width: 70px;">
-                                        <button type="submit" class="btn btn-primary flex-grow-1" ${m.quantity <= 0 ? 'disabled' : ''}>
+                                        <input type="hidden" name="medicine_id" value="${id}">
+                                        <input type="number" name="quantity" value="1" min="1" max="${quantity}" class="form-control text-center" style="width: 70px;">
+                                        <button type="submit" class="btn btn-primary flex-grow-1" ${quantity <= 0 ? 'disabled' : ''}>
                                             <i class="bi bi-cart-plus me-1"></i>Add
                                         </button>
                                     </form>
@@ -235,7 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const badgeEl = document.getElementById('liveOrderStatusBadge');
                         if (badgeEl) {
-                            badgeEl.className = `badge bg-${data.order_status_badge}`;
+                            const safeBadges = ['success', 'warning', 'danger', 'secondary', 'info', 'primary', 'dark'];
+                            const badge = safeBadges.includes(data.order_status_badge) ? data.order_status_badge : 'secondary';
+                            badgeEl.className = `badge bg-${badge}`;
                             badgeEl.textContent = data.order_status_label;
                         }
 

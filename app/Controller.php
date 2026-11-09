@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\InventoryService;
 use PDO;
 use DomainException;
+use InvalidArgumentException;
 use Throwable;
 
 class Controller
@@ -81,8 +82,11 @@ class Controller
                 'is_customer'  => is_customer(),
             ], 200);
 
+        } catch (DomainException | InvalidArgumentException $e) {
+            api_json_response(false, $e->getMessage(), null, 400);
         } catch (Throwable $e) {
-            api_json_response(false, 'Failed to query medicines: ' . $e->getMessage(), null, 500);
+            error_log('API Error [' . __METHOD__ . ']: ' . $e->getMessage());
+            api_json_response(false, 'A server-side error occurred while processing your request. Please try again later.', null, 500);
         }
     }
 
@@ -171,10 +175,11 @@ class Controller
                 'requires_prescription' => cart_requires_prescription(),
             ], 200);
 
-        } catch (DomainException $e) {
+        } catch (DomainException | InvalidArgumentException $e) {
             api_json_response(false, $e->getMessage(), null, 400);
         } catch (Throwable $e) {
-            api_json_response(false, 'Failed to add item to cart: ' . $e->getMessage(), null, 500);
+            error_log('API Error [' . __METHOD__ . ']: ' . $e->getMessage());
+            api_json_response(false, 'A server-side error occurred while processing your request. Please try again later.', null, 500);
         }
     }
 
@@ -285,10 +290,11 @@ class Controller
                 'requires_prescription' => cart_requires_prescription(),
             ], 200);
 
-        } catch (DomainException $e) {
+        } catch (DomainException | InvalidArgumentException $e) {
             api_json_response(false, $e->getMessage(), null, 400);
         } catch (Throwable $e) {
-            api_json_response(false, 'Failed to update cart: ' . $e->getMessage(), null, 500);
+            error_log('API Error [' . __METHOD__ . ']: ' . $e->getMessage());
+            api_json_response(false, 'A server-side error occurred while processing your request. Please try again later.', null, 500);
         }
     }
 
@@ -469,8 +475,11 @@ class Controller
                 'last_updated'              => nice_date($order['updated_at'] ?? $order['created_at'], true),
             ], 200);
 
+        } catch (DomainException | InvalidArgumentException $e) {
+            api_json_response(false, $e->getMessage(), null, 400);
         } catch (Throwable $e) {
-            api_json_response(false, 'Failed to retrieve order status: ' . $e->getMessage(), null, 500);
+            error_log('API Error [' . __METHOD__ . ']: ' . $e->getMessage());
+            api_json_response(false, 'A server-side error occurred while processing your request. Please try again later.', null, 500);
         }
     }
 
@@ -599,6 +608,7 @@ class Controller
 
         $requiresRx = cart_requires_prescription();
         $prescriptionRecord = self::processPrescriptionUpload($prescriptionFile, $requiresRx);
+        $uploadedFilePath = $prescriptionRecord ? dirname(__DIR__) . '/' . $prescriptionRecord['file_path'] : null;
 
         $pdo = db();
         $pdo->beginTransaction();
@@ -666,6 +676,9 @@ class Controller
         } catch (Throwable $ex) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
+            }
+            if ($uploadedFilePath && file_exists($uploadedFilePath)) {
+                @unlink($uploadedFilePath);
             }
             throw $ex;
         }
