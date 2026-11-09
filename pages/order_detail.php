@@ -169,6 +169,17 @@ $isConfirmedNotice = isset($_GET['confirmed']) && $_GET['confirmed'] === '1';
     </div>
 </div>
 
+<div id="orderReloadNotice" class="alert alert-info alert-dismissible fade show d-none mb-4" role="alert">
+    <div class="d-flex align-items-center">
+        <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+        <div>
+            <strong>Order Status Updated:</strong> The order status has changed. 
+            <a href="javascript:location.reload()" class="alert-link fw-bold">Click here to reload</a> the page and view updated invoice/timeline details.
+        </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
 <div class="row g-4">
     <!-- Left Column: Order Items, Delivery, & History -->
     <div class="col-lg-8">

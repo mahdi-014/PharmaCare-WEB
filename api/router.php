@@ -33,10 +33,17 @@ if ($action === '') {
     }
 }
 
-match ($action) {
-    'search'                 => $controller->searchApi(),
-    'cart_add', 'add'        => $controller->cartAddApi(),
-    'cart_update', 'update'  => $controller->cartUpdateApi(),
-    'status', 'order_status' => $controller->orderStatusApi(),
-    default                  => api_json_response(false, "Unknown API action '{$action}'.", null, 400),
-};
+try {
+    match ($action) {
+        'search'                 => $controller->searchApi(),
+        'cart_add', 'add'        => $controller->cartAddApi(),
+        'cart_update', 'update'  => $controller->cartUpdateApi(),
+        'status', 'order_status' => $controller->orderStatusApi(),
+        default                  => api_json_response(false, "Unknown API action '{$action}'.", null, 400),
+    };
+} catch (DomainException | InvalidArgumentException $e) {
+    api_json_response(false, $e->getMessage(), null, 400);
+} catch (Throwable $e) {
+    error_log('API Router Exception: ' . $e->getMessage());
+    api_json_response(false, 'A server-side error occurred while processing your request. Please try again later.', null, 500);
+}
