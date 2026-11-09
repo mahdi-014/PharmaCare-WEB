@@ -59,6 +59,7 @@ class InventoryService
 
         $batch['previous_quantity'] = $currentStock;
         $batch['remaining_quantity'] = $currentStock - $quantity;
+        assert($batch['remaining_quantity'] >= 0, 'Invariant violation: Medicine stock cannot be negative.');
         return $batch;
     }
 

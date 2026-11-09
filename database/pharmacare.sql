@@ -8,12 +8,12 @@ CREATE DATABASE IF NOT EXISTS pharmacare CHARACTER SET utf8mb4 COLLATE utf8mb4_u
 USE pharmacare;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS sale_items;
+DROP TABLE IF EXISTS sales;
 DROP TABLE IF EXISTS prescriptions;
 DROP TABLE IF EXISTS order_status_history;
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
-DROP TABLE IF EXISTS sale_items;
-DROP TABLE IF EXISTS sales;
 DROP TABLE IF EXISTS medicines;
 DROP TABLE IF EXISTS suppliers;
 DROP TABLE IF EXISTS categories;
@@ -72,6 +72,8 @@ CREATE TABLE medicines (
     category_id INT NOT NULL,
     supplier_id INT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_medicine_quantity CHECK (quantity >= 0),
+    CONSTRAINT chk_medicine_prices CHECK (purchase_price >= 0 AND selling_price >= 0),
     CONSTRAINT fk_medicine_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT,
     CONSTRAINT fk_medicine_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE RESTRICT,
     INDEX idx_medicine_name (name),
@@ -79,39 +81,7 @@ CREATE TABLE medicines (
     INDEX idx_medicine_expiry (expiry_date)
 ) ENGINE=InnoDB;
 
--- 5. Sales Transactions (POS & Online Bridge)
-CREATE TABLE sales (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    invoice_number VARCHAR(50) NOT NULL UNIQUE,
-    sale_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    customer_name VARCHAR(100) NULL,
-    customer_phone VARCHAR(30) NULL,
-    subtotal DECIMAL(10,2) NOT NULL,
-    discount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    total_amount DECIMAL(10,2) NOT NULL,
-    sold_by_id INT NOT NULL,
-    channel VARCHAR(20) NOT NULL DEFAULT 'POS',
-    order_id INT NULL,
-    CONSTRAINT fk_sale_sold_by FOREIGN KEY (sold_by_id) REFERENCES app_users(id) ON DELETE RESTRICT,
-    INDEX idx_sale_date (sale_date),
-    INDEX idx_sale_channel (channel),
-    INDEX idx_sale_order (order_id)
-) ENGINE=InnoDB;
-
--- 6. Sales Itemized Lines
-CREATE TABLE sale_items (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    sale_id INT NOT NULL,
-    medicine_id INT NOT NULL,
-    quantity INT NOT NULL,
-    unit_price DECIMAL(10,2) NOT NULL,
-    line_total DECIMAL(10,2) NOT NULL,
-    CONSTRAINT fk_sale_items_sale FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
-    CONSTRAINT fk_sale_items_medicine FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE RESTRICT,
-    INDEX idx_sale_items_sale (sale_id)
-) ENGINE=InnoDB;
-
--- 7. Customer Online Orders
+-- 5. Customer Online Orders
 CREATE TABLE orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_number VARCHAR(50) NOT NULL UNIQUE,
@@ -132,13 +102,15 @@ CREATE TABLE orders (
     stock_restored TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT chk_order_subtotal CHECK (subtotal >= 0),
+    CONSTRAINT chk_order_total CHECK (total_amount >= 0),
     CONSTRAINT fk_order_customer FOREIGN KEY (customer_id) REFERENCES app_users(id) ON DELETE RESTRICT,
     INDEX idx_order_customer (customer_id),
     INDEX idx_order_status (order_status),
     INDEX idx_order_created (created_at)
 ) ENGINE=InnoDB;
 
--- 8. Order Itemized Lines
+-- 6. Order Itemized Lines (Historical Frozen Snapshots)
 CREATE TABLE order_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
@@ -148,12 +120,14 @@ CREATE TABLE order_items (
     quantity INT NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
     line_total DECIMAL(10,2) NOT NULL,
+    CONSTRAINT chk_order_item_quantity CHECK (quantity > 0),
+    CONSTRAINT chk_order_item_price CHECK (unit_price >= 0 AND line_total >= 0),
     CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     CONSTRAINT fk_order_items_medicine FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE RESTRICT,
     INDEX idx_order_items_order (order_id)
 ) ENGINE=InnoDB;
 
--- 9. Order Audit Lifecycle Trail
+-- 7. Order Audit Lifecycle Trail
 CREATE TABLE order_status_history (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
@@ -167,7 +141,7 @@ CREATE TABLE order_status_history (
     INDEX idx_history_order (order_id)
 ) ENGINE=InnoDB;
 
--- 10. Uploaded Prescription Documents
+-- 8. Uploaded Prescription Documents
 CREATE TABLE prescriptions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
@@ -186,6 +160,46 @@ CREATE TABLE prescriptions (
     CONSTRAINT fk_prescription_reviewer FOREIGN KEY (reviewed_by_id) REFERENCES app_users(id) ON DELETE SET NULL,
     INDEX idx_prescription_order (order_id),
     INDEX idx_prescription_status (verification_status)
+) ENGINE=InnoDB;
+
+-- 9. Sales Transactions (POS & Online Bridge)
+CREATE TABLE sales (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_number VARCHAR(50) NOT NULL UNIQUE,
+    sale_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    customer_name VARCHAR(100) NULL,
+    customer_phone VARCHAR(30) NULL,
+    subtotal DECIMAL(10,2) NOT NULL,
+    discount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total_amount DECIMAL(10,2) NOT NULL,
+    sold_by_id INT NOT NULL,
+    channel VARCHAR(20) NOT NULL DEFAULT 'POS',
+    order_id INT NULL,
+    CONSTRAINT chk_sales_subtotal CHECK (subtotal >= 0),
+    CONSTRAINT chk_sales_total CHECK (total_amount >= 0),
+    CONSTRAINT fk_sales_sold_by FOREIGN KEY (sold_by_id) REFERENCES app_users(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_sales_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL,
+    INDEX idx_sale_date (sale_date),
+    INDEX idx_sale_channel (channel),
+    INDEX idx_sale_order (order_id)
+) ENGINE=InnoDB;
+
+-- 10. Sales Itemized Lines (Historical Frozen Snapshots)
+CREATE TABLE sale_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sale_id INT NOT NULL,
+    medicine_id INT NOT NULL,
+    medicine_name VARCHAR(120) NOT NULL,
+    generic_name VARCHAR(120) NULL,
+    batch_number VARCHAR(50) NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    line_total DECIMAL(10,2) NOT NULL,
+    CONSTRAINT chk_sale_item_quantity CHECK (quantity > 0),
+    CONSTRAINT chk_sale_item_price CHECK (unit_price >= 0 AND line_total >= 0),
+    CONSTRAINT fk_sale_items_sale FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
+    CONSTRAINT fk_sale_items_medicine FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE RESTRICT,
+    INDEX idx_sale_items_sale (sale_id)
 ) ENGINE=InnoDB;
 
 -- ========================================================
@@ -235,6 +249,6 @@ INSERT INTO medicines (id, name, generic_name, brand_name, batch_number, medicin
 INSERT INTO sales (id, invoice_number, sale_date, customer_name, customer_phone, subtotal, discount, total_amount, sold_by_id, channel) VALUES
 (1, 'INV-20261109-POS001', DATE_SUB(NOW(), INTERVAL 2 HOUR), 'Walk-in Customer', '01700000000', 50.00, 0.00, 50.00, 2, 'POS');
 
-INSERT INTO sale_items (sale_id, medicine_id, quantity, unit_price, line_total) VALUES
-(1, 1, 10, 2.00, 20.00),
-(1, 4, 5, 6.00, 30.00);
+INSERT INTO sale_items (sale_id, medicine_id, medicine_name, generic_name, batch_number, quantity, unit_price, line_total) VALUES
+(1, 1, 'Napa 500', 'Paracetamol', 'SQ-NP-01', 10, 2.00, 20.00),
+(1, 4, 'Seclo 20', 'Omeprazole', 'SQ-SC-04', 5, 6.00, 30.00);

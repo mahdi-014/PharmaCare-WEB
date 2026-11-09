@@ -821,15 +821,27 @@ class Controller
                     ]);
                     $saleId = (int)$pdo->lastInsertId();
 
-                    $itemsStmt = $pdo->prepare('SELECT medicine_id, quantity, unit_price, line_total FROM order_items WHERE order_id = ?');
+                    $itemsStmt = $pdo->prepare(
+                        'SELECT oi.medicine_id, oi.medicine_name, oi.batch_number, oi.quantity, oi.unit_price, oi.line_total, m.generic_name 
+                         FROM order_items oi 
+                         LEFT JOIN medicines m ON m.id = oi.medicine_id 
+                         WHERE oi.order_id = ?'
+                    );
                     $itemsStmt->execute([$orderId]);
                     $orderItems = $itemsStmt->fetchAll();
 
-                    $itemInsert = $pdo->prepare('INSERT INTO sale_items (sale_id, medicine_id, quantity, unit_price, line_total) VALUES (?, ?, ?, ?, ?)');
+                    $itemInsert = $pdo->prepare(
+                        'INSERT INTO sale_items 
+                         (sale_id, medicine_id, medicine_name, generic_name, batch_number, quantity, unit_price, line_total) 
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+                    );
                     foreach ($orderItems as $oi) {
                         $itemInsert->execute([
                             $saleId,
                             (int)$oi['medicine_id'],
+                            $oi['medicine_name'],
+                            $oi['generic_name'] ?? null,
+                            $oi['batch_number'],
                             (int)$oi['quantity'],
                             $oi['unit_price'],
                             $oi['line_total']
@@ -1031,18 +1043,18 @@ class Controller
 
         $stmt = $pdo->prepare("
             SELECT 
-                m.id,
-                m.id AS medicine_id,
-                m.name,
-                m.name AS medicine_name,
-                m.generic_name,
-                c.name AS category_name,
+                si.medicine_id AS id,
+                si.medicine_id,
+                COALESCE(si.medicine_name, m.name, 'Unknown Medicine') AS name,
+                COALESCE(si.medicine_name, m.name, 'Unknown Medicine') AS medicine_name,
+                COALESCE(si.generic_name, m.generic_name, '') AS generic_name,
+                COALESCE(c.name, 'General') AS category_name,
                 COALESCE(SUM(si.quantity), 0) AS total_units_sold,
                 COALESCE(SUM(si.line_total), 0.00) AS total_revenue_generated
             FROM sale_items si
-            JOIN medicines m ON m.id = si.medicine_id
-            JOIN categories c ON c.id = m.category_id
-            GROUP BY m.id, m.name, m.generic_name, c.name
+            LEFT JOIN medicines m ON m.id = si.medicine_id
+            LEFT JOIN categories c ON c.id = m.category_id
+            GROUP BY si.medicine_id, COALESCE(si.medicine_name, m.name, 'Unknown Medicine'), COALESCE(si.generic_name, m.generic_name, ''), COALESCE(c.name, 'General')
             ORDER BY total_units_sold DESC
             LIMIT ?
         ");

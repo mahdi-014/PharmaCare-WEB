@@ -26,7 +26,13 @@ $medicines = fetch_all(
 // Fetch completed sales transactions for ledger
 $sales = fetch_all(
     'SELECT s.*, u.full_name AS sold_by_name, u.username AS sold_by_username, 
-            COALESCE((SELECT SUM(si.quantity) FROM sale_items si WHERE si.sale_id = s.id), 0) AS total_quantity 
+            COALESCE((SELECT SUM(si.quantity) FROM sale_items si WHERE si.sale_id = s.id), 0) AS total_quantity,
+            COALESCE((
+                SELECT GROUP_CONCAT(CONCAT(COALESCE(si.medicine_name, m.name), " (", si.quantity, ")") SEPARATOR ", ")
+                FROM sale_items si
+                LEFT JOIN medicines m ON m.id = si.medicine_id
+                WHERE si.sale_id = s.id
+            ), "") AS items_summary
      FROM sales s 
      JOIN app_users u ON u.id = s.sold_by_id 
      ORDER BY s.sale_date DESC, s.id DESC'
@@ -221,7 +227,14 @@ $sales = fetch_all(
                                 <span class="subtext text-muted small"><?= e($s['customer_phone'] ?? '') ?></span>
                             </td>
                             <td><?= e($s['sold_by_name']) ?></td>
-                            <td><?= (int)$s['total_quantity'] ?></td>
+                            <td>
+                                <div><strong class="text-dark"><?= (int)$s['total_quantity'] ?></strong> <small class="text-secondary">unit(s)</small></div>
+                                <?php if (!empty($s['items_summary'])): ?>
+                                    <div class="small text-muted text-truncate" style="max-width: 220px;" title="<?= e($s['items_summary']) ?>">
+                                        <?= e($s['items_summary']) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <strong class="text-success"><?= money($s['total_amount']) ?></strong>
                                 <?php if ((float)$s['discount'] > 0): ?>

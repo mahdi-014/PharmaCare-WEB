@@ -39,7 +39,17 @@ if (is_customer()) {
     }
 }
 
-$items = fetch_all('SELECT si.*, m.name AS medicine_name, m.generic_name, m.batch_number FROM sale_items si JOIN medicines m ON m.id = si.medicine_id WHERE si.sale_id = ? ORDER BY si.id', [$id]);
+$items = fetch_all(
+    'SELECT si.*, 
+            COALESCE(si.medicine_name, m.name) AS medicine_name, 
+            COALESCE(si.generic_name, m.generic_name) AS generic_name, 
+            COALESCE(si.batch_number, m.batch_number) AS batch_number 
+     FROM sale_items si 
+     LEFT JOIN medicines m ON m.id = si.medicine_id 
+     WHERE si.sale_id = ? 
+     ORDER BY si.id', 
+    [$id]
+);
 ?>
 
 <!-- Action Bar (Hidden during printing) -->

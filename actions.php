@@ -462,7 +462,15 @@ try {
                     $unitCents = (int)round((float)$medicine['selling_price'] * 100);
                     $lineCents = $unitCents * $quantity;
                     $subtotal += $lineCents;
-                    $lines[] = [$medicineId, $quantity, $unitCents, $lineCents];
+                    $lines[] = [
+                        'medicine_id'   => $medicineId,
+                        'medicine_name' => (string)$medicine['name'],
+                        'generic_name'  => (string)($medicine['generic_name'] ?? ''),
+                        'batch_number'  => (string)$medicine['batch_number'],
+                        'quantity'      => $quantity,
+                        'unit_price'    => number_format($unitCents / 100, 2, '.', ''),
+                        'line_total'    => number_format($lineCents / 100, 2, '.', ''),
+                    ];
                 }
 
                 if ($discount > $subtotal) {
@@ -482,14 +490,17 @@ try {
                 ]);
                 $saleId = (int)$pdo->lastInsertId();
 
-                $add = $pdo->prepare('INSERT INTO sale_items (sale_id, medicine_id, quantity, unit_price, line_total) VALUES (?, ?, ?, ?, ?)');
-                foreach ($lines as [$medicineId, $quantity, $unitCents, $lineCents]) {
+                $add = $pdo->prepare('INSERT INTO sale_items (sale_id, medicine_id, medicine_name, generic_name, batch_number, quantity, unit_price, line_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+                foreach ($lines as $line) {
                     $add->execute([
                         $saleId,
-                        $medicineId,
-                        $quantity,
-                        number_format($unitCents / 100, 2, '.', ''),
-                        number_format($lineCents / 100, 2, '.', '')
+                        $line['medicine_id'],
+                        $line['medicine_name'],
+                        $line['generic_name'] !== '' ? $line['generic_name'] : null,
+                        $line['batch_number'],
+                        $line['quantity'],
+                        $line['unit_price'],
+                        $line['line_total']
                     ]);
                 }
 

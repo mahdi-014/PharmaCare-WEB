@@ -260,9 +260,14 @@ class Order
     public static function getItems(int $orderId): array
     {
         $stmt = db()->prepare(
-            'SELECT oi.*, m.name AS medicine_name, m.generic_name, m.batch_number, m.medicine_type, c.name AS category_name 
+            'SELECT oi.id, oi.order_id, oi.medicine_id, 
+                    oi.medicine_name, oi.batch_number, 
+                    oi.quantity, oi.unit_price, oi.line_total, 
+                    m.generic_name, 
+                    COALESCE(m.medicine_type, "TABLET") AS medicine_type, 
+                    COALESCE(c.name, "General") AS category_name 
              FROM order_items oi 
-             JOIN medicines m ON m.id = oi.medicine_id 
+             LEFT JOIN medicines m ON m.id = oi.medicine_id 
              LEFT JOIN categories c ON c.id = m.category_id 
              WHERE oi.order_id = ? 
              ORDER BY oi.id ASC'
