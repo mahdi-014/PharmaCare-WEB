@@ -458,19 +458,22 @@ try {
                 $subtotal = 0;
                 $lines = [];
                 foreach ($requested as $medicineId => $quantity) {
-                    $medicine = InventoryService::deductBatchStock($pdo, $medicineId, $quantity);
-                    $unitCents = (int)round((float)$medicine['selling_price'] * 100);
-                    $lineCents = $unitCents * $quantity;
-                    $subtotal += $lineCents;
-                    $lines[] = [
-                        'medicine_id'   => $medicineId,
-                        'medicine_name' => (string)$medicine['name'],
-                        'generic_name'  => (string)($medicine['generic_name'] ?? ''),
-                        'batch_number'  => (string)$medicine['batch_number'],
-                        'quantity'      => $quantity,
-                        'unit_price'    => number_format($unitCents / 100, 2, '.', ''),
-                        'line_total'    => number_format($lineCents / 100, 2, '.', ''),
-                    ];
+                    $allocations = InventoryService::allocateFefoStock($pdo, $medicineId, $quantity);
+                    foreach ($allocations as $alloc) {
+                        $allocQty = (int)$alloc['quantity'];
+                        $unitCents = (int)round(((float)$alloc['unit_price']) * 100);
+                        $lineCents = $unitCents * $allocQty;
+                        $subtotal += $lineCents;
+                        $lines[] = [
+                            'medicine_id'   => (int)$alloc['batch_id'],
+                            'medicine_name' => (string)$alloc['medicine_name'],
+                            'generic_name'  => (string)($alloc['generic_name'] ?? ''),
+                            'batch_number'  => (string)$alloc['batch_number'],
+                            'quantity'      => $allocQty,
+                            'unit_price'    => number_format($unitCents / 100, 2, '.', ''),
+                            'line_total'    => number_format($lineCents / 100, 2, '.', ''),
+                        ];
+                    }
                 }
 
                 if ($discount > $subtotal) {

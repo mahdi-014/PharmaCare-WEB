@@ -87,7 +87,7 @@ class InventoryService
     }
 
     /**
-     * Allocates stock across batches of a medicine using First Expiry, First Out (FEFO).
+     * Allocates stock across unexpired batches using First Expiry, First Out (FEFO) order.
      */
     public static function allocateFefoStock(PDO $pdo, int $medicineId, int $requestedQuantity): array
     {
@@ -95,47 +95,64 @@ class InventoryService
             throw new DomainException('Requested allocation quantity must be a positive integer.');
         }
 
-        $nameStmt = $pdo->prepare('SELECT name FROM medicines WHERE id = ?');
-        $nameStmt->execute([$medicineId]);
-        $medName = $nameStmt->fetchColumn();
+        $targetStmt = $pdo->prepare('SELECT id, name, generic_name, medicine_type, selling_price FROM medicines WHERE id = ?');
+        $targetStmt->execute([$medicineId]);
+        $target = $targetStmt->fetch();
 
-        if (!$medName) {
-            throw new DomainException("Medicine #{$medicineId} was not found.");
+        if (!$target) {
+            throw new DomainException("Medicine batch #{$medicineId} was not found.");
         }
 
+        $medName = (string)$target['name'];
+        $genericName = (string)$target['generic_name'];
+        $medType = (string)$target['medicine_type'];
+
+        // Query all active, unexpired batches matching target medicine ID or formulation in strict earliest-expiry order
         $batchStmt = $pdo->prepare(
-            'SELECT id, name, batch_number, quantity, selling_price, expiry_date 
+            'SELECT id, name, generic_name, batch_number, quantity, expiry_date, selling_price 
              FROM medicines 
-             WHERE name = ? AND active = 1 AND expiry_date >= CURDATE() AND quantity > 0 
+             WHERE (id = ? OR (generic_name = ? AND medicine_type = ?)) 
+               AND active = 1 
+               AND expiry_date >= CURDATE() 
+               AND quantity > 0 
              ORDER BY expiry_date ASC, id ASC 
              FOR UPDATE'
         );
-        $batchStmt->execute([$medName]);
+        $batchStmt->execute([$medicineId, $genericName, $medType]);
         $batches = $batchStmt->fetchAll();
 
         $allocations = [];
         $remainingNeeded = $requestedQuantity;
 
         foreach ($batches as $b) {
-            if ($remainingNeeded <= 0) break;
+            if ($remainingNeeded <= 0) {
+                break;
+            }
             $batchAvailable = (int)$b['quantity'];
+            if ($batchAvailable <= 0) {
+                continue;
+            }
             $take = min($remainingNeeded, $batchAvailable);
 
             self::deductBatchStock($pdo, (int)$b['id'], $take);
 
             $allocations[] = [
-                'batch_id' => (int)$b['id'],
-                'batch_number' => $b['batch_number'],
-                'quantity' => $take,
-                'unit_price' => (float)$b['selling_price'],
-                'expiry_date' => $b['expiry_date']
+                'batch_id'      => (int)$b['id'],
+                'medicine_id'   => (int)$b['id'],
+                'batch_number'  => (string)$b['batch_number'],
+                'deducted'      => $take,
+                'quantity'      => $take,
+                'unit_price'    => (float)$b['selling_price'],
+                'medicine_name' => (string)$b['name'],
+                'generic_name'  => (string)$b['generic_name'],
+                'expiry_date'   => (string)$b['expiry_date'],
             ];
 
             $remainingNeeded -= $take;
         }
 
         if ($remainingNeeded > 0) {
-            throw new DomainException("Insufficient total stock across batches for '{$medName}'. Requested: {$requestedQuantity}, Unfulfilled: {$remainingNeeded}.");
+            throw new DomainException("Insufficient unexpired stock available to fulfill requested quantity for '{$medName}'. Requested: {$requestedQuantity}, Unfulfilled: {$remainingNeeded}.");
         }
 
         return $allocations;

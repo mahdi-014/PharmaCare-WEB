@@ -350,11 +350,11 @@ function prescription_status_label(string $status): string
 function get_allowed_order_transitions(string $currentStatus): array
 {
     return match($currentStatus) {
-        'PENDING'    => ['CONFIRMED', 'COMPLETED', 'CANCELLED'],
-        'CONFIRMED'  => ['COMPLETED', 'CANCELLED', 'PROCESSING', 'READY', 'DISPATCHED'],
-        'PROCESSING' => ['COMPLETED', 'CANCELLED', 'READY'],
-        'READY'      => ['COMPLETED', 'CANCELLED', 'DISPATCHED'],
-        'DISPATCHED' => ['COMPLETED', 'CANCELLED'],
+        'PENDING'    => ['CONFIRMED', 'CANCELLED'],
+        'CONFIRMED'  => ['PROCESSING', 'CANCELLED'],
+        'PROCESSING' => ['READY', 'CANCELLED'],
+        'READY'      => ['DISPATCHED', 'COMPLETED', 'CANCELLED'],
+        'DISPATCHED' => ['COMPLETED'],
         'COMPLETED'  => [],
         'CANCELLED'  => [],
         default      => []

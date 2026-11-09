@@ -19,6 +19,16 @@ use Throwable;
 
 class Controller
 {
+    public const ALLOWED_TRANSITIONS = [
+        'PENDING'    => ['CONFIRMED', 'CANCELLED'],
+        'CONFIRMED'  => ['PROCESSING', 'CANCELLED'],
+        'PROCESSING' => ['READY', 'CANCELLED'],
+        'READY'      => ['DISPATCHED', 'COMPLETED', 'CANCELLED'],
+        'DISPATCHED' => ['COMPLETED'],
+        'COMPLETED'  => [], // Terminal immutable state
+        'CANCELLED'  => [], // Terminal immutable state
+    ];
+
     // ==========================================
     // 1. Storefront & Catalog
     // ==========================================
@@ -622,19 +632,23 @@ class Controller
 
             foreach ($sortedCart as $medId => $cItem) {
                 $qty = (int)$cItem['quantity'];
-                $deducted = InventoryService::deductBatchStock($pdo, (int)$medId, $qty);
-                $unitPrice = (float)$deducted['selling_price'];
-                $lineTotal = round($unitPrice * $qty, 2);
-                $subtotal += $lineTotal;
+                $allocations = InventoryService::allocateFefoStock($pdo, (int)$medId, $qty);
 
-                $lineItems[] = [
-                    'medicine_id'   => (int)$medId,
-                    'medicine_name' => (string)$deducted['name'],
-                    'batch_number'  => (string)$deducted['batch_number'],
-                    'quantity'      => $qty,
-                    'unit_price'    => $unitPrice,
-                    'line_total'    => $lineTotal
-                ];
+                foreach ($allocations as $alloc) {
+                    $allocQty = (int)$alloc['quantity'];
+                    $unitPrice = (float)$alloc['unit_price'];
+                    $lineTotal = round($unitPrice * $allocQty, 2);
+                    $subtotal += $lineTotal;
+
+                    $lineItems[] = [
+                        'medicine_id'   => (int)$alloc['batch_id'],
+                        'medicine_name' => (string)$alloc['medicine_name'],
+                        'batch_number'  => (string)$alloc['batch_number'],
+                        'quantity'      => $allocQty,
+                        'unit_price'    => $unitPrice,
+                        'line_total'    => $lineTotal
+                    ];
+                }
             }
 
             $shippingFee = 0.00;
@@ -764,17 +778,17 @@ class Controller
                 throw new DomainException("Order is already in '{$newStatus}' status.");
             }
 
-            if (in_array($currentStatus, ['COMPLETED', 'CANCELLED'], true)) {
+            if (in_array($currentStatus, ['COMPLETED', 'CANCELLED'], true) || empty(self::ALLOWED_TRANSITIONS[$currentStatus])) {
                 throw new DomainException("Cannot modify terminal order (Current status: {$currentStatus}).");
             }
 
-            $allowed = get_allowed_order_transitions($currentStatus);
+            $allowed = self::ALLOWED_TRANSITIONS[$currentStatus] ?? [];
             if (!in_array($newStatus, $allowed, true)) {
-                throw new DomainException("Invalid status transition from {$currentStatus} to {$newStatus}.");
+                throw new DomainException("Illegal status transition from '{$currentStatus}' to '{$newStatus}'.");
             }
 
             if ((int)$order['prescription_required'] === 1 && in_array($newStatus, ['CONFIRMED', 'PROCESSING', 'READY', 'DISPATCHED', 'COMPLETED'], true)) {
-                if ($order['prescription_status'] !== 'VERIFIED') {
+                if (!in_array((string)$order['prescription_status'], ['VERIFIED', 'APPROVED'], true)) {
                     throw new DomainException("Cannot advance order: Prescription must be approved by a pharmacist first.");
                 }
             }
