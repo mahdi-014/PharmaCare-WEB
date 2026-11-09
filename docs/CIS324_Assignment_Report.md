@@ -19,7 +19,7 @@
 | **Architecture:** | Ultra-Compact Modular MVC Architecture (30 Application Files, 11 Core Views) |
 | **Target Repository:** | [https://github.com/mahdi-014/PharmaCare-WEB.git](https://github.com/mahdi-014/PharmaCare-WEB.git) |
 | **Active Deployment Branch:** | `main` |
-| **Final Release Commit:** | `ff18f70` |
+| **Final Release Commit:** | `bfd0c51` |
 | **Date of Submission:** | **November 30, 2026** |
 | **Student Name / ID:** | **Md. Mahdi Hasan (ID: 241-16-016)** |
 | **Semester / Section:** | Fall 2026 / Section A |
