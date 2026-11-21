@@ -378,23 +378,20 @@ PharmaCare incorporates defense-in-depth security mechanisms designed to mitigat
 
 ---
 
-## 9. Documentation Index
+## 9. Academic Coursework & Documentation Deliverables
 
-All technical documents, audits, diagrams, and reports are consolidated in the [`submission/`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/) directory:
+For academic grading and coursework submission, comprehensive technical reports, audits, diagrams, and compiled PDF reports are compiled locally within the isolated `submission/` package (excluded from version control to maintain a clean codebase repository):
 
-| Document | Format | Description & Purpose |
+| Deliverable Artifact | Format | Description & Scope |
 | :--- | :---: | :--- |
-| [`submission/241-16-016_A_CIS324_Assignment.pdf`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/241-16-016_A_CIS324_Assignment.pdf) | PDF (5.98 MB) | **Official Submission Document:** Final compiled PDF report with cover page, TOC, diagrams, 14 screenshots, and APA 7th references. |
-| [`submission/CIS324_Assignment_Report_Review.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/CIS324_Assignment_Report_Review.md) | Markdown | **Working Review Source:** Complete editable report with verified source code citations, line numbers, and student action placeholders. |
-| [`submission/CIS324_Assignment_Report.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/CIS324_Assignment_Report.md) | Markdown | **Original Baseline Report:** Unmodified primary project report preserved for version comparison and academic integrity. |
-| [`submission/PharmaCare_System_Architecture.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/PharmaCare_System_Architecture.md) | Markdown | **Technical Architecture Specification:** Deep architectural analysis of MVC layers, request lifecycles, and concurrency controls. |
-| [`submission/PharmaCare_ER_Diagram.pdf`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/PharmaCare_ER_Diagram.pdf) | PDF (Vector) | **Entity-Relationship Diagram (Vector):** High-resolution A3 landscape relational schema diagram in Crow's Foot notation. |
-| [`submission/PharmaCare_ER_Diagram.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/PharmaCare_ER_Diagram.png) | PNG (Raster) | **Entity-Relationship Diagram (Image):** High-resolution raster rendering of the 10-table schema for visual embedding. |
-| [`submission/PharmaCare_ER_Diagram.mmd`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/PharmaCare_ER_Diagram.mmd) | Mermaid Source| **ER Diagram Source Code:** Valid Mermaid ER syntax representing all 10 tables and 14 foreign keys. |
-| [`submission/ERD_Analysis_Report.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/ERD_Analysis_Report.md) | Markdown | **Relational Schema Audit:** Comprehensive column-by-column data dictionary, key analysis, and normalization proof. |
-| [`submission/FINAL_ASSIGNMENT_AUDIT.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/FINAL_ASSIGNMENT_AUDIT.md) | Markdown | **Assignment Rubric Audit:** Item-by-item verification against the 35-mark criteria in `CIS324_Assignment_Fall_2026.pdf`. |
-| [`submission/REPORT_REVIEW_CHECKLIST.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/REPORT_REVIEW_CHECKLIST.md) | Markdown | **Report Verification Checklist:** 25-point quality assurance verification report confirming report accuracy. |
-| [`docs/screenshots/SCREENSHOT_COLLECTION_REPORT.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/SCREENSHOT_COLLECTION_REPORT.md) | Markdown | **Screenshot Verification Report:** Verification metadata, viewports, and MD5 hashes for all 14 visual evidence files. |
+| **CIS324 Assignment Final PDF** | PDF (5.98 MB) | Complete official report with cover page, TOC, diagrams, 14 screenshots, and APA 7th references (`241-16-016_A_CIS324_Assignment.pdf`). |
+| **Assignment Review Source** | Markdown | Full editable review draft with code line references and student reflection sections (`CIS324_Assignment_Report_Review.md`). |
+| **Baseline Project Report** | Markdown | Original unedited coursework report baseline (`CIS324_Assignment_Report.md`). |
+| **System Architecture Specification** | Markdown | Deep technical architecture specification covering MVC tiers, concurrency, and request pipelines (`PharmaCare_System_Architecture.md`). |
+| **Entity-Relationship Diagram** | PDF & PNG | Complete 10-table 3NF relational schema in vector PDF and high-res image format (`PharmaCare_ER_Diagram.pdf` / `.png`). |
+| **ERD Analysis & Data Dictionary** | Markdown | Column-by-column schema specification and foreign key audit (`ERD_Analysis_Report.md`). |
+| **Assignment Rubric Audit** | Markdown | Comprehensive requirement-by-requirement audit against the 35-mark criteria (`FINAL_ASSIGNMENT_AUDIT.md`). |
+| **Quality Review Checklist** | Markdown | 25-point quality assurance compliance checklist (`REPORT_REVIEW_CHECKLIST.md`). |
 
 ---
 
@@ -416,9 +413,8 @@ All 14 UI screenshots adhere strictly to a standardized **1440 × 900 pixel** de
 | **Fig 10** | [`10_Prescription.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/10_Prescription.png) | `index.php?page=cart#rx` | Doctor prescription upload interface displaying file format notices and regulatory warnings. |
 | **Fig 11** | [`11_User_Management.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/11_User_Management.png) | `index.php?page=users` | Administrator user administration interface with role filtering, status toggles, and account forms. |
 | **Fig 12** | [`12_Database_Structure.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/12_Database_Structure.png) | `phpmyadmin` | phpMyAdmin structural overview showing all 10 normalized InnoDB tables, collation, and row counts. |
-| **Fig 13** | [`13_ER_Diagram.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/13_ER_Diagram.png) | `submission/PharmaCare_ER_Diagram.pdf` | High-resolution render of the complete 10-table A3 landscape Entity-Relationship Diagram. |
+| **Fig 13** | [`13_ER_Diagram.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/13_ER_Diagram.png) | Entity-Relationship Diagram | High-resolution render of the complete 10-table A3 landscape Entity-Relationship Diagram. |
 | **Fig 14** | [`14_Test_Results.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/14_Test_Results.png) | `tests/run_tests.php` | Terminal screenshot showing 11 automated test cases passing with 100% success rate in 4.096 seconds. |
-| **Fig 15** | [`PharmaCare_ER_Diagram.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/PharmaCare_ER_Diagram.png) | Standalone ER Diagram | Standalone high-resolution ER diagram render for vector print and digital display. |
 
 ---
 
@@ -441,16 +437,18 @@ This matrix maps questions **Q1 through Q9** in the official assignment specific
 
 ---
 
-## 12. Submission Package Directory Guide
+## 12. Local Academic Submission Package Guide
 
-A consolidated standalone submission folder is prepared at [`submission/`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/) containing all essential deliverables for evaluation:
+A consolidated standalone academic submission folder is maintained locally for grading and coursework evaluation under `submission/` (excluded from GitHub):
 
 ```text
 submission/
 ├── 241-16-016_A_CIS324_Assignment.pdf   # Complete final assignment PDF report (5.98 MB)
 ├── CIS324_Assignment_Report_Review.md   # Editable report Markdown source with code references
+├── CIS324_Assignment_Report.md          # Original unedited coursework report baseline
 ├── PharmaCare_ER_Diagram.pdf            # High-resolution vector ER Diagram (A3 Landscape)
 ├── PharmaCare_ER_Diagram.png            # High-resolution raster ER Diagram image
+├── PharmaCare_ER_Diagram.mmd            # Mermaid source code of the ER diagram
 ├── PharmaCare_System_Architecture.md    # In-depth system architecture specification
 ├── REPORT_REVIEW_CHECKLIST.md           # 25-point report quality assurance checklist
 ├── FINAL_ASSIGNMENT_AUDIT.md            # Comprehensive 35-mark assignment audit report

@@ -43,3 +43,8 @@ backups/
 # 6. Patient Uploaded Prescriptions (Confidential Medical Documents)
 storage/prescriptions/*
 !storage/prescriptions/.gitkeep
+
+# 7. Local Academic Submission Package & Documentation (kept locally, excluded from GitHub)
+submission/
+FINAL_SUBMISSION_README.md
+docs/screenshots/SCREENSHOT_COLLECTION_REPORT.md
