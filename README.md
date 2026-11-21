@@ -132,8 +132,9 @@ PharmaCare-PHP/
 ├── tests/
 │   ├── run_tests.php          # 11-test automated QA regression suite (CLI-only, sandbox guarded)
 │   └── README.md              # Test execution guidelines and database isolation rules
-├── docs/                      # Comprehensive academic documentation, ERDs, and audits
-├── submission/                # Standalone submission package for grading and distribution
+├── docs/
+│   └── screenshots/           # High-resolution UI evidence screenshots (1440 × 900 px) (Q2, Q3)
+├── submission/                # Standalone submission package (PDF, Reports, Architecture, ERDs)
 ├── actions.php                # Centralized POST form action processor with CSRF validation (Q1, Q5)
 ├── index.php                  # Central Front Controller & Route Dispatcher (Q1)
 ├── .gitignore                 # Centralized repository ignore rules (Q9)
@@ -379,20 +380,20 @@ PharmaCare incorporates defense-in-depth security mechanisms designed to mitigat
 
 ## 9. Documentation Index
 
-All technical documents, audits, diagrams, and reports are maintained in the [`docs/`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/) directory:
+All technical documents, audits, diagrams, and reports are consolidated in the [`submission/`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/) directory:
 
 | Document | Format | Description & Purpose |
 | :--- | :---: | :--- |
-| [`docs/241-16-016_A_CIS324_Assignment.pdf`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/241-16-016_A_CIS324_Assignment.pdf) | PDF (5.98 MB) | **Official Submission Document:** Final compiled PDF report with cover page, TOC, diagrams, 14 screenshots, and APA 7th references. |
-| [`docs/CIS324_Assignment_Report_Review.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/CIS324_Assignment_Report_Review.md) | Markdown | **Working Review Source:** Complete editable report with verified source code citations, line numbers, and student action placeholders. |
-| [`docs/CIS324_Assignment_Report.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/CIS324_Assignment_Report.md) | Markdown | **Original Baseline Report:** Unmodified primary project report preserved for version comparison and academic integrity. |
-| [`docs/PharmaCare_System_Architecture.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/PharmaCare_System_Architecture.md) | Markdown | **Technical Architecture Specification:** Deep architectural analysis of MVC layers, request lifecycles, and concurrency controls. |
-| [`docs/PharmaCare_ER_Diagram.pdf`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/PharmaCare_ER_Diagram.pdf) | PDF (Vector) | **Entity-Relationship Diagram (Vector):** High-resolution A3 landscape relational schema diagram in Crow's Foot notation. |
-| [`docs/PharmaCare_ER_Diagram.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/PharmaCare_ER_Diagram.png) | PNG (Raster) | **Entity-Relationship Diagram (Image):** High-resolution raster rendering of the 10-table schema for visual embedding. |
-| [`docs/PharmaCare_ER_Diagram.mmd`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/PharmaCare_ER_Diagram.mmd) | Mermaid Source| **ER Diagram Source Code:** Valid Mermaid ER syntax representing all 10 tables and 14 foreign keys. |
-| [`docs/ERD_Analysis_Report.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/ERD_Analysis_Report.md) | Markdown | **Relational Schema Audit:** Comprehensive column-by-column data dictionary, key analysis, and normalization proof. |
-| [`docs/FINAL_ASSIGNMENT_AUDIT.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/FINAL_ASSIGNMENT_AUDIT.md) | Markdown | **Assignment Rubric Audit:** Item-by-item verification against the 35-mark criteria in `CIS324_Assignment_Fall_2026.pdf`. |
-| [`docs/REPORT_REVIEW_CHECKLIST.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/REPORT_REVIEW_CHECKLIST.md) | Markdown | **Report Verification Checklist:** 25-point quality assurance verification report confirming report accuracy. |
+| [`submission/241-16-016_A_CIS324_Assignment.pdf`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/241-16-016_A_CIS324_Assignment.pdf) | PDF (5.98 MB) | **Official Submission Document:** Final compiled PDF report with cover page, TOC, diagrams, 14 screenshots, and APA 7th references. |
+| [`submission/CIS324_Assignment_Report_Review.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/CIS324_Assignment_Report_Review.md) | Markdown | **Working Review Source:** Complete editable report with verified source code citations, line numbers, and student action placeholders. |
+| [`submission/CIS324_Assignment_Report.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/CIS324_Assignment_Report.md) | Markdown | **Original Baseline Report:** Unmodified primary project report preserved for version comparison and academic integrity. |
+| [`submission/PharmaCare_System_Architecture.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/PharmaCare_System_Architecture.md) | Markdown | **Technical Architecture Specification:** Deep architectural analysis of MVC layers, request lifecycles, and concurrency controls. |
+| [`submission/PharmaCare_ER_Diagram.pdf`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/PharmaCare_ER_Diagram.pdf) | PDF (Vector) | **Entity-Relationship Diagram (Vector):** High-resolution A3 landscape relational schema diagram in Crow's Foot notation. |
+| [`submission/PharmaCare_ER_Diagram.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/PharmaCare_ER_Diagram.png) | PNG (Raster) | **Entity-Relationship Diagram (Image):** High-resolution raster rendering of the 10-table schema for visual embedding. |
+| [`submission/PharmaCare_ER_Diagram.mmd`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/PharmaCare_ER_Diagram.mmd) | Mermaid Source| **ER Diagram Source Code:** Valid Mermaid ER syntax representing all 10 tables and 14 foreign keys. |
+| [`submission/ERD_Analysis_Report.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/ERD_Analysis_Report.md) | Markdown | **Relational Schema Audit:** Comprehensive column-by-column data dictionary, key analysis, and normalization proof. |
+| [`submission/FINAL_ASSIGNMENT_AUDIT.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/FINAL_ASSIGNMENT_AUDIT.md) | Markdown | **Assignment Rubric Audit:** Item-by-item verification against the 35-mark criteria in `CIS324_Assignment_Fall_2026.pdf`. |
+| [`submission/REPORT_REVIEW_CHECKLIST.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/REPORT_REVIEW_CHECKLIST.md) | Markdown | **Report Verification Checklist:** 25-point quality assurance verification report confirming report accuracy. |
 | [`docs/screenshots/SCREENSHOT_COLLECTION_REPORT.md`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/SCREENSHOT_COLLECTION_REPORT.md) | Markdown | **Screenshot Verification Report:** Verification metadata, viewports, and MD5 hashes for all 14 visual evidence files. |
 
 ---
@@ -415,9 +416,9 @@ All 14 UI screenshots adhere strictly to a standardized **1440 × 900 pixel** de
 | **Fig 10** | [`10_Prescription.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/10_Prescription.png) | `index.php?page=cart#rx` | Doctor prescription upload interface displaying file format notices and regulatory warnings. |
 | **Fig 11** | [`11_User_Management.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/11_User_Management.png) | `index.php?page=users` | Administrator user administration interface with role filtering, status toggles, and account forms. |
 | **Fig 12** | [`12_Database_Structure.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/12_Database_Structure.png) | `phpmyadmin` | phpMyAdmin structural overview showing all 10 normalized InnoDB tables, collation, and row counts. |
-| **Fig 13** | [`13_ER_Diagram.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/13_ER_Diagram.png) | `docs/PharmaCare_ER_Diagram.pdf` | High-resolution render of the complete 10-table A3 landscape Entity-Relationship Diagram. |
+| **Fig 13** | [`13_ER_Diagram.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/13_ER_Diagram.png) | `submission/PharmaCare_ER_Diagram.pdf` | High-resolution render of the complete 10-table A3 landscape Entity-Relationship Diagram. |
 | **Fig 14** | [`14_Test_Results.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/screenshots/14_Test_Results.png) | `tests/run_tests.php` | Terminal screenshot showing 11 automated test cases passing with 100% success rate in 4.096 seconds. |
-| **Fig 15** | [`PharmaCare_ER_Diagram.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/docs/PharmaCare_ER_Diagram.png) | Root Documentation | Standalone high-resolution ER diagram render for vector print and digital display. |
+| **Fig 15** | [`PharmaCare_ER_Diagram.png`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/submission/PharmaCare_ER_Diagram.png) | Standalone ER Diagram | Standalone high-resolution ER diagram render for vector print and digital display. |
 
 ---
 
