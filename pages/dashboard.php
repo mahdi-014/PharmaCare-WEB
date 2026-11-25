@@ -95,7 +95,7 @@ $alerts = $summary['inventory_alerts'];
                     </div>
                 </div>
                 <div class="d-flex gap-2 align-items-center ms-3">
-                    <a href="<?= e(url('orders')) ?>" class="btn btn-sm btn-info text-white fw-bold text-nowrap">
+                    <a href="<?= e(url('orders')) ?>" class="btn btn-sm btn-info text-dark fw-bold text-nowrap">
                         <i class="bi bi-arrow-right-circle me-1"></i>Fulfillment Queue
                     </a>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>

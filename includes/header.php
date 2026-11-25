@@ -85,7 +85,7 @@ if (!user()) {
  <?php foreach ($links as [$dest, $icon, $label, $selected]): 
    $linkUrl = str_contains($dest, '#') ? 'index.php?page=' . $dest : url($dest);
  ?>
-   <a class="<?= ($active === $selected ? 'active' : '') ?>" href="<?= e($linkUrl) ?>">
+   <a class="<?= ($active === $selected ? 'active' : '') ?>" href="<?= e($linkUrl) ?>" title="<?= e($label) ?>" aria-label="<?= e($label) ?>">
      <i class="bi bi-<?= e($icon) ?>"></i>
      <span><?= e($label) ?></span>
    </a>
@@ -98,7 +98,7 @@ if (!user()) {
    <form method="post" action="actions.php">
      <input type="hidden" name="action" value="logout">
      <?= csrf_field() ?>
-     <button class="btn btn-sm btn-outline-light w-100" type="submit">
+     <button class="btn btn-sm btn-outline-light w-100" type="submit" title="Logout" aria-label="Logout">
        <i class="bi bi-box-arrow-left me-1"></i><span>Logout</span>
      </button>
    </form>
