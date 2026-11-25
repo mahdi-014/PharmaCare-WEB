@@ -97,8 +97,6 @@ PharmaCare-PHP/
 │   └── database.php             # Environment-aware PDO singleton & Asia/Dhaka timezone
 ├── database/
 │   └── pharmacare.sql           # 10-table 3NF InnoDB schema (14 FKs, 10 CHECKs) & seed data
-├── docs/
-│   └── screenshots/             # UI & responsive viewport evidence screenshots (01–16)
 ├── includes/
 │   ├── auth.php                 # 30-min idle timeout & role guards (require_admin/staff/customer)
 │   ├── footer.php               # Global footer & JS bundles
@@ -106,6 +104,7 @@ PharmaCare-PHP/
 │   └── header.php               # Role-aware sidebar, topbar, CSRF meta tag & flash alerts
 ├── pages/                       # 11 consolidated UI views (login, register, dashboard, catalog,
 │                                # cart, orders, order_detail, medicines, sales, invoice, users)
+├── screenshots/                 # UI & responsive viewport evidence screenshots (01–16)
 ├── storage/
 │   └── prescriptions/           # Quarantined prescription upload folder (.gitkeep tracked; HTTP 403)
 ├── tests/
@@ -180,8 +179,8 @@ php tests/run_tests.php
 ### Directly Verified Checks
 - **PHP Syntax Lint:** `php -l` passed across all **23 `.php` files** (`0` syntax errors on `PHP 8.5.12`).
 - **XAMPP Runtime & Security Headers:** Verified `200 OK` on `/`, `login`, `catalog`, `api/router.php?action=search&keyword=Napa`, plus `403 Forbidden` on `config/database.php`, `database/pharmacare.sql`, and `storage/prescriptions/`.
-- **Responsive Viewport Verification (Headless Edge CDP):** Verified `0px` horizontal overflow across `dashboard`, `catalog`, `medicines`, `orders`, `sales`, and `users` at `1440×900`, `768×1024`, and `375×812` (`18/18` checks; see `docs/screenshots/15_Responsive_Tablet_Dashboard_.png` and `16_Responsive_Mobile_Catalog.png`).
-- **Test Runner Status:** `docs/screenshots/14_Test_Results.png` records an earlier Nov 20 execution (`10 Passed / 1 Failed`, `90.9%`, `TC-1.2` empty directory subsequently removed). `tests/run_tests.php` was not re-executed during cleanup because `DB_PASS` for `pharmacare_test_user` is stored outside the workspace.
+- **Responsive Viewport Verification (Headless Edge CDP):** Verified `0px` horizontal overflow across `dashboard`, `catalog`, `medicines`, `orders`, `sales`, and `users` at `1440×900`, `768×1024`, and `375×812` (`18/18` checks; see `screenshots/15_Responsive_Tablet_Dashboard_.png` and `16_Responsive_Mobile_Catalog.png`).
+- **Test Runner Status:** `screenshots/14_Test_Results.png` records an earlier Nov 20 execution (`10 Passed / 1 Failed`, `90.9%`, `TC-1.2` empty directory subsequently removed). `tests/run_tests.php` was not re-executed during cleanup because `DB_PASS` for `pharmacare_test_user` is stored outside the workspace.
 
 ---
 
