@@ -93,7 +93,6 @@ PharmaCare-PHP/
 ├── assets/
 │   ├── script.js                # POS calculator, debounced Fetch search, async cart, polling
 │   └── style.css                # Custom theme, WCAG-checked palette, responsive & print styles
-├── backup_md/                   # Local archived phase/integrity Markdown docs (git-ignored)
 ├── config/
 │   └── database.php             # Environment-aware PDO singleton & Asia/Dhaka timezone
 ├── database/
@@ -109,7 +108,6 @@ PharmaCare-PHP/
 │                                # cart, orders, order_detail, medicines, sales, invoice, users)
 ├── storage/
 │   └── prescriptions/           # Quarantined prescription upload folder (.gitkeep tracked; HTTP 403)
-├── submission/                  # Local academic submission package (git-ignored)
 ├── tests/
 │   └── run_tests.php            # CLI-only QA test suite (11 tests guarded to pharmacare_test)
 ├── .gitignore
@@ -191,8 +189,8 @@ php tests/run_tests.php
 
 - **Repository:** `https://github.com/mahdi-014/PharmaCare-WEB.git`
 - **Branch:** `main`
-- **Archived Markdown Docs:** Historical phase reports, integrity reports, and auxiliary Markdown notes remain locally in git-ignored `backup_md/`.
-- **Local Assignment Package:** Academic report drafts and compiled PDFs remain locally in git-ignored `submission/`.
+- **Archived Markdown Docs:** Historical phase reports and integrity records are stored outside the repository root (`../backup_md/`).
+- **Local Assignment Package:** Academic report drafts and compiled PDFs are maintained outside the repository root (`../submission/`).
 
 ---
 
