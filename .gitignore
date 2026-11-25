@@ -46,5 +46,6 @@ storage/prescriptions/*
 
 # 7. Local Academic Submission Package & Documentation (kept locally, excluded from GitHub)
 submission/
+backup_md/
 FINAL_SUBMISSION_README.md
 docs/screenshots/SCREENSHOT_COLLECTION_REPORT.md

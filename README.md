@@ -93,7 +93,7 @@ PharmaCare-PHP/
 ├── assets/
 │   ├── script.js                # POS calculator, debounced Fetch search, async cart, polling
 │   └── style.css                # Custom theme, WCAG-checked palette, responsive & print styles
-├── backup_md/                   # Archived phase, integrity, and auxiliary Markdown docs
+├── backup_md/                   # Local archived phase/integrity Markdown docs (git-ignored)
 ├── config/
 │   └── database.php             # Environment-aware PDO singleton & Asia/Dhaka timezone
 ├── database/
@@ -191,7 +191,7 @@ php tests/run_tests.php
 
 - **Repository:** `https://github.com/mahdi-014/PharmaCare-WEB.git`
 - **Branch:** `main`
-- **Archived Markdown Docs:** Historical phase reports, integrity reports, and auxiliary Markdown notes are archived in [`backup_md/`](file:///D:/PharmaCare-PHP-Complete/PharmaCare-PHP/backup_md/).
+- **Archived Markdown Docs:** Historical phase reports, integrity reports, and auxiliary Markdown notes remain locally in git-ignored `backup_md/`.
 - **Local Assignment Package:** Academic report drafts and compiled PDFs remain locally in git-ignored `submission/`.
 
 ---
