@@ -698,7 +698,10 @@ class Controller
         }
     }
 
-    public static function processPrescriptionUpload(?array $file, bool $isRequired): ?array
+    /**
+     * Validate an uploaded prescription image/PDF (size, extension, byte MIME match, and image sanity).
+     */
+    public static function validatePrescriptionUpload(?array $file, bool $isRequired, bool $requireHttpUpload = true): ?array
     {
         $hasFile = $file !== null && isset($file['error']) && $file['error'] !== UPLOAD_ERR_NO_FILE;
 
@@ -721,17 +724,49 @@ class Controller
 
         $origName = basename((string)$file['name']);
         $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
-        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'pdf'], true)) {
+        $extToMime = [
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png'  => 'image/png',
+            'pdf'  => 'application/pdf',
+        ];
+        if (!array_key_exists($ext, $extToMime)) {
             throw new DomainException('Prescription must be an image (JPG, PNG) or PDF document.');
         }
 
-        $tmpPath = (string)$file['tmp_name'];
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_file($finfo, $tmpPath);
-        finfo_close($finfo);
+        $tmpPath = (string)($file['tmp_name'] ?? '');
+        if ($tmpPath === '' || !is_file($tmpPath) || ($requireHttpUpload && !is_uploaded_file($tmpPath))) {
+            throw new DomainException('Invalid uploaded prescription temporary file.');
+        }
 
-        if (!in_array($mime, ['image/jpeg', 'image/png', 'application/pdf'], true)) {
-            throw new DomainException('Invalid file type. Only JPG, PNG, and PDF files are accepted.');
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = $finfo ? (string)finfo_file($finfo, $tmpPath) : '';
+        if ($finfo) {
+            finfo_close($finfo);
+        }
+
+        if ($mime !== $extToMime[$ext]) {
+            throw new DomainException('File content does not match its extension. Only valid JPG, PNG, and PDF files are accepted.');
+        }
+
+        if (str_starts_with($mime, 'image/') && @getimagesize($tmpPath) === false) {
+            throw new DomainException('Uploaded prescription image is corrupted or invalid.');
+        }
+
+        return [
+            'orig_name' => $origName,
+            'ext'       => $ext,
+            'file_size' => $fileSize,
+            'mime_type' => $mime,
+            'tmp_path'  => $tmpPath,
+        ];
+    }
+
+    public static function processPrescriptionUpload(?array $file, bool $isRequired): ?array
+    {
+        $validated = self::validatePrescriptionUpload($file, $isRequired, true);
+        if ($validated === null) {
+            return null;
         }
 
         $storageDir = dirname(__DIR__) . '/storage/prescriptions';
@@ -739,18 +774,18 @@ class Controller
             mkdir($storageDir, 0755, true);
         }
 
-        $randomName = bin2hex(random_bytes(16)) . '.' . $ext;
+        $randomName = bin2hex(random_bytes(16)) . '.' . $validated['ext'];
         $targetDiskPath = $storageDir . '/' . $randomName;
 
-        if (!move_uploaded_file($tmpPath, $targetDiskPath)) {
+        if (!move_uploaded_file($validated['tmp_path'], $targetDiskPath)) {
             throw new DomainException('Failed to store the uploaded prescription. Please try again.');
         }
 
         return [
             'file_path'         => 'storage/prescriptions/' . $randomName,
-            'original_filename' => $origName,
-            'file_size'         => $fileSize,
-            'mime_type'         => $mime,
+            'original_filename' => $validated['orig_name'],
+            'file_size'         => $validated['file_size'],
+            'mime_type'         => $validated['mime_type'],
         ];
     }
 

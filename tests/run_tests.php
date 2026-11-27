@@ -107,6 +107,25 @@ use App\Models\User;
 use App\Services\InventoryService;
 use App\Controllers\Controller;
 
+/**
+ * Helper: Run an isolated PHP CLI probe script in the system temp directory.
+ */
+function run_cli_probe(string $phpBody): string
+{
+    $tmp = tempnam(sys_get_temp_dir(), 'pc_probe_');
+    if ($tmp === false) {
+        return '';
+    }
+    file_put_contents($tmp, $phpBody);
+    try {
+        return shell_exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($tmp) . ' 2>&1') ?? '';
+    } finally {
+        if (file_exists($tmp)) {
+            @unlink($tmp);
+        }
+    }
+}
+
 class PharmaCareTestSuite
 {
     private string $baseDir;
@@ -396,6 +415,32 @@ class PharmaCareTestSuite
             );
         }
 
+        // SEC-03: SQL Injection & Input Validation Defense
+        $sqliQueryBlocked = User::findByUsernameOrEmail("' OR '1'='1") === null;
+        $sqliCatalogEmpty = empty(Medicine::findActive("' UNION SELECT 1,2,3--", 0));
+        $invalidIntRejected = false;
+        $invalidPriceRejected = false;
+        try {
+            positive_int("1 OR 1=1", 'Category ID');
+        } catch (DomainException $ex) {
+            $invalidIntRejected = true;
+        }
+        try {
+            price_value("12.34; DROP TABLE sales", 'Price');
+        } catch (DomainException $ex) {
+            $invalidPriceRejected = true;
+        }
+        $sec03Passed = $sqliQueryBlocked && $sqliCatalogEmpty && $invalidIntRejected && $invalidPriceRejected;
+        $this->recordResult(
+            'SEC-03',
+            'Security',
+            'SQLi & Input Validation',
+            'Run SQLi strings against prepared PDO models and scalar/regex validators',
+            'Prepared statements treat payloads as literals; validators throw DomainException',
+            $sec03Passed,
+            $sec03Passed ? 'Prepared PDO queries and strict validators neutralized SQLi payloads.' : 'SQLi probe bypassed validation or query binding.'
+        );
+
         // SEC-04: Prescription Upload Orphan Purge on Transaction Failure
         $testStorageDir = $this->baseDir . '/storage/prescriptions';
         if (!is_dir($testStorageDir)) {
@@ -473,6 +518,111 @@ class PharmaCareTestSuite
         } finally {
             $pdo->rollBack();
         }
+
+        // SEC-06: CSRF Token Generation & Rejection (Form + JSON API)
+        $token = csrf();
+        $csrfProbe = run_cli_probe(sprintf(
+            '<?php ob_start(); ini_set("session.save_path", sys_get_temp_dir()); $_SERVER["REQUEST_METHOD"]="POST"; $_POST["_csrf"]="forged_token_xyz"; $_POST["action"]="category_save"; require %s;',
+            var_export($this->baseDir . '/actions.php', true)
+        ));
+        $apiCsrfProbe = run_cli_probe(sprintf(
+            '<?php ob_start(); ini_set("session.save_path", sys_get_temp_dir()); require %s; $_SESSION["user"]=["id"=>3,"role"=>"CUSTOMER"]; $_SERVER["REQUEST_METHOD"]="POST"; $_SERVER["HTTP_X_CSRF_TOKEN"]="bad_token"; api_csrf_verify();',
+            var_export($this->baseDir . '/includes/functions.php', true)
+        ));
+        $apiJson = json_decode($apiCsrfProbe, true);
+        $sec06Passed = preg_match('/^[a-f0-9]{64}$/', $token) === 1
+            && str_contains($csrfProbe, 'Invalid CSRF session token')
+            && is_array($apiJson) && ($apiJson['success'] ?? null) === false;
+        $this->recordResult(
+            'SEC-06',
+            'Security',
+            'CSRF Verification & Rejection',
+            'Dispatch forged POST and JSON API CSRF tokens via subprocess probes',
+            '64-hex CSPRNG token generated; invalid form and API tokens rejected (403)',
+            $sec06Passed,
+            $sec06Passed ? 'csrf_verify() and api_csrf_verify() strictly rejected forged tokens.' : 'CSRF validation accepted an invalid token.'
+        );
+
+        // SEC-07: Unified Bcrypt Cost-12 Policy & Password Verification
+        $hash12 = hash_password('StrongPass#2026');
+        $info12 = password_get_info($hash12);
+        $legacyCost10 = password_hash('LegacyPass123', PASSWORD_BCRYPT, ['cost' => 10]);
+        $sec07Passed = str_starts_with($hash12, '$2y$12$')
+            && (($info12['options']['cost'] ?? 0) === PASSWORD_HASH_COST)
+            && password_verify('StrongPass#2026', $hash12)
+            && !password_verify('WrongPass#999', $hash12)
+            && !password_needs_upgrade($hash12)
+            && password_needs_upgrade($legacyCost10);
+        $this->recordResult(
+            'SEC-07',
+            'Security',
+            'Consistent Bcrypt Policy & Auth',
+            'Verify hash_password() cost=12, password_verify() rejection, and rehash upgrade check',
+            'Consistent $2y$12$ hashes, invalid password denied, legacy cost-10 flagged for upgrade',
+            $sec07Passed,
+            $sec07Passed ? 'Unified Bcrypt cost-12 policy and invalid-password rejection verified.' : 'Password hashing cost inconsistency or verification error.'
+        );
+
+        // SEC-08: Prescription File Upload Security Validation
+        $tmpDir = sys_get_temp_dir();
+        $runId = bin2hex(random_bytes(4));
+        $tmpPhp = "{$tmpDir}/pc_rx_{$runId}.php";
+        $tmpSpoofJpg = "{$tmpDir}/pc_rx_{$runId}.jpg";
+        $tmpMismatchPdf = "{$tmpDir}/pc_rx_mismatch_{$runId}.pdf";
+        $tmpLargePng = "{$tmpDir}/pc_rx_big_{$runId}.png";
+        $tmpValidPng = "{$tmpDir}/pc_rx_ok_{$runId}.png";
+        $tinyPng = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=');
+        file_put_contents($tmpPhp, '<?php echo "shell"; ?>');
+        file_put_contents($tmpSpoofJpg, '<?php echo "fake jpeg"; ?>');
+        file_put_contents($tmpMismatchPdf, $tinyPng);
+        file_put_contents($tmpLargePng, str_repeat('A', (5 * 1024 * 1024) + 128));
+        file_put_contents($tmpValidPng, $tinyPng);
+
+        $phpBlocked = false;
+        $spoofBlocked = false;
+        $mismatchBlocked = false;
+        $sizeBlocked = false;
+        $validAccepted = false;
+        try {
+            try {
+                Controller::validatePrescriptionUpload(['name' => 'shell.php', 'tmp_name' => $tmpPhp, 'size' => filesize($tmpPhp), 'error' => UPLOAD_ERR_OK], true, false);
+            } catch (DomainException $ex) {
+                $phpBlocked = true;
+            }
+            try {
+                Controller::validatePrescriptionUpload(['name' => 'rx.jpg', 'tmp_name' => $tmpSpoofJpg, 'size' => filesize($tmpSpoofJpg), 'error' => UPLOAD_ERR_OK], true, false);
+            } catch (DomainException $ex) {
+                $spoofBlocked = true;
+            }
+            try {
+                Controller::validatePrescriptionUpload(['name' => 'fake.pdf', 'tmp_name' => $tmpMismatchPdf, 'size' => filesize($tmpMismatchPdf), 'error' => UPLOAD_ERR_OK], true, false);
+            } catch (DomainException $ex) {
+                $mismatchBlocked = true;
+            }
+            try {
+                Controller::validatePrescriptionUpload(['name' => 'huge.png', 'tmp_name' => $tmpLargePng, 'size' => filesize($tmpLargePng), 'error' => UPLOAD_ERR_OK], true, false);
+            } catch (DomainException $ex) {
+                $sizeBlocked = true;
+            }
+            $okMeta = Controller::validatePrescriptionUpload(['name' => 'rx.png', 'tmp_name' => $tmpValidPng, 'size' => filesize($tmpValidPng), 'error' => UPLOAD_ERR_OK], true, false);
+            $validAccepted = is_array($okMeta) && ($okMeta['mime_type'] ?? '') === 'image/png';
+        } finally {
+            foreach ([$tmpPhp, $tmpSpoofJpg, $tmpMismatchPdf, $tmpLargePng, $tmpValidPng] as $f) {
+                if (file_exists($f)) {
+                    @unlink($f);
+                }
+            }
+        }
+        $sec08Passed = $phpBlocked && $spoofBlocked && $mismatchBlocked && $sizeBlocked && $validAccepted;
+        $this->recordResult(
+            'SEC-08',
+            'Security',
+            'Upload Extension/MIME/Size Guard',
+            'Test .php script, spoofed .jpg, PNG-as-.pdf mismatch, >5MB payload, and valid PNG',
+            'Malicious, MIME-mismatched, and oversized uploads rejected; valid PNG passes',
+            $sec08Passed,
+            $sec08Passed ? 'Executable, MIME-spoofed, mismatched, and >5MB files rejected; valid PNG verified.' : 'File upload validation allowed an invalid payload.'
+        );
 
         echo "\n";
     }
@@ -721,6 +871,77 @@ class PharmaCareTestSuite
         } finally {
             $pdo->rollBack();
         }
+
+        // TC-4.3: Session Fixation Regeneration & 30-Minute Idle Timeout
+        $regProbe = run_cli_probe(sprintf(
+            '<?php ob_start(); ini_set("session.save_path", sys_get_temp_dir()); require %s; $before = session_id(); $_POST["_csrf"]=csrf(); $_POST["action"]="login"; $_POST["username"]="staff"; $_POST["password"]="staff123"; $_SERVER["REQUEST_METHOD"]="POST"; register_shutdown_function(function() use ($before) { if (ob_get_level()) ob_end_clean(); echo json_encode(["before"=>$before,"after"=>session_id(),"user"=>$_SESSION["user"]??null,"strict"=>ini_get("session.use_strict_mode"),"only_cookies"=>ini_get("session.use_only_cookies")]); }); require %s;',
+            var_export($this->baseDir . '/includes/functions.php', true),
+            var_export($this->baseDir . '/actions.php', true)
+        ));
+        $regData = json_decode($regProbe, true);
+        $_SESSION['user'] = ['id' => 3, 'role' => 'CUSTOMER'];
+        $_SESSION['last_activity'] = 1000;
+        $activeAtBoundary = !is_session_timed_out(1000 + SESSION_IDLE_TIMEOUT);
+        $expiredAfterLimit = is_session_timed_out(1000 + SESSION_IDLE_TIMEOUT + 1);
+        clear_authenticated_session();
+        $sessionCleared = empty($_SESSION['user']) && !isset($_SESSION['last_activity']);
+
+        $tc43Passed = is_array($regData)
+            && !empty($regData['before']) && !empty($regData['after']) && ($regData['before'] !== $regData['after'])
+            && (($regData['user']['role'] ?? '') === 'STAFF')
+            && ($regData['strict'] === '1') && ($regData['only_cookies'] === '1')
+            && $activeAtBoundary && $expiredAfterLimit && $sessionCleared;
+        $this->recordResult(
+            'TC-4.3',
+            'Session Sec.',
+            'Fixation Regeneration & Timeout',
+            'Execute actions.php login, verify SID regeneration, cookie flags, and 1800s timeout',
+            'Login regenerates SID; strict flags active; timeout triggers > 1800s',
+            $tc43Passed,
+            $tc43Passed ? 'Login SID regeneration, strict flags, and 1800s timeout verified.' : 'Session hardening check failed.'
+        );
+
+        // TC-4.4: Unauthenticated Guest & Cross-Role Authorization Rejection
+        $guestApiOut = run_cli_probe(sprintf(
+            '<?php ob_start(); ini_set("session.save_path", sys_get_temp_dir()); $_SERVER["REQUEST_METHOD"]="POST"; $_GET["action"]="cart_add"; require %s;',
+            var_export($this->baseDir . '/api/router.php', true)
+        ));
+        $staffCartOut = run_cli_probe(sprintf(
+            '<?php ob_start(); ini_set("session.save_path", sys_get_temp_dir()); require %s; $_SESSION["user"]=["id"=>2,"role"=>"STAFF","username"=>"staff"]; $_SERVER["REQUEST_METHOD"]="POST"; (new \App\Controllers\Controller())->cartAddApi();',
+            var_export($this->baseDir . '/includes/functions.php', true)
+        ));
+        $guestJson = json_decode($guestApiOut, true);
+        $staffJson = json_decode($staffCartOut, true);
+        $medContent = file_get_contents($this->baseDir . '/pages/medicines.php') ?: '';
+        $tc44Passed = is_array($guestJson) && str_contains($guestJson['message'] ?? '', 'Authentication required')
+            && is_array($staffJson) && str_contains($staffJson['message'] ?? '', 'Staff accounts cannot')
+            && str_contains($medContent, "require_admin();");
+        $this->recordResult(
+            'TC-4.4',
+            'Access Ctrl.',
+            'Guest 401 & Role Isolation',
+            'Dispatch guest and STAFF requests to customer cart API and verify admin tab guard',
+            'Guest rejected (401), STAFF rejected from customer cart (403), admin tabs guarded',
+            $tc44Passed,
+            $tc44Passed ? 'Unauthenticated requests and cross-role actions properly denied.' : 'Authorization gap in API or admin view guards.'
+        );
+
+        // TC-4.5: Invoice & POS Horizontal IDOR Check
+        $invoiceContent = file_get_contents($this->baseDir . '/pages/invoice.php') ?: '';
+        $orderDetailContent = file_get_contents($this->baseDir . '/pages/order_detail.php') ?: '';
+        $tc45Passed = str_contains($invoiceContent, 'if (empty($sale[\'order_id\']))')
+            && str_contains($invoiceContent, '(int)$order[\'customer_id\'] !== (int)user()[\'id\']')
+            && str_contains($orderDetailContent, "redirect('orders');")
+            && str_contains($orderDetailContent, '(int)$streamOrder[\'customer_id\'] !== (int)user()[\'id\']');
+        $this->recordResult(
+            'TC-4.5',
+            'IDOR Defense',
+            'pages/invoice.php & order_detail.php',
+            'Verify customer ownership guards on invoices, Rx streaming, and fixed orders redirect',
+            'POS invoices and peer-customer orders/prescriptions denied cleanly',
+            $tc45Passed,
+            $tc45Passed ? 'Invoice, Rx streaming, and order detail IDOR checks verified.' : 'Missing IDOR guard or malformed redirect in invoice/order_detail.'
+        );
 
         echo "\n";
     }

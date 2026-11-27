@@ -38,6 +38,10 @@ if ($action === 'login') {
             redirect('login');
         }
 
+        if (password_needs_upgrade((string)$account['password'])) {
+            execute_sql('UPDATE app_users SET password = ? WHERE id = ?', [hash_password($password), (int)$account['id']]);
+        }
+
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int)$account['id'];
         $_SESSION['user'] = [
@@ -90,7 +94,7 @@ if ($action === 'register') {
             throw new DomainException('This email is already registered. Please sign in or use another email.');
         }
 
-        $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+        $hash = hash_password($password);
         execute_sql(
             'INSERT INTO app_users (full_name, username, email, phone, address, password, role, enabled) VALUES (?, ?, ?, ?, ?, ?, "CUSTOMER", 1)',
             [$fullName, $username, $email, $phone, $address, $hash]
@@ -240,7 +244,9 @@ try {
             if ((int)scalar('SELECT COUNT(*) FROM medicines WHERE category_id = ?', [$id]) > 0) {
                 throw new DomainException('This category is used by medicines and cannot be deleted.');
             }
-            execute_sql('DELETE FROM categories WHERE id = ?', [$id]);
+            if (execute_sql('DELETE FROM categories WHERE id = ?', [$id]) === 0) {
+                throw new DomainException('Category does not exist.');
+            }
             flash('success', 'Category deleted successfully.');
             redirect('medicines', ['tab' => 'categories']);
             break;
@@ -274,7 +280,9 @@ try {
             if ((int)scalar('SELECT COUNT(*) FROM medicines WHERE supplier_id = ?', [$id]) > 0) {
                 throw new DomainException('This supplier is used by medicines and cannot be deleted.');
             }
-            execute_sql('DELETE FROM suppliers WHERE id = ?', [$id]);
+            if (execute_sql('DELETE FROM suppliers WHERE id = ?', [$id]) === 0) {
+                throw new DomainException('Supplier does not exist.');
+            }
             flash('success', 'Supplier deleted successfully.');
             redirect('medicines', ['tab' => 'suppliers']);
             break;
@@ -385,7 +393,7 @@ try {
 
             execute_sql(
                 'INSERT INTO app_users (full_name, username, email, password, role, enabled) VALUES (?, ?, ?, ?, ?, 1)',
-                [$fullName, $username, $email, password_hash($password, PASSWORD_BCRYPT), $role]
+                [$fullName, $username, $email, hash_password($password), $role]
             );
             flash('success', "User account '@{$username}' ({$role}) created successfully.");
             redirect('users');
@@ -420,7 +428,7 @@ try {
             if (!$target) {
                 throw new DomainException('User not found.');
             }
-            execute_sql('UPDATE app_users SET password = ? WHERE id = ?', [password_hash($newPassword, PASSWORD_BCRYPT), $id]);
+            execute_sql('UPDATE app_users SET password = ? WHERE id = ?', [hash_password($newPassword), $id]);
             flash('success', "Password for '@{$target['username']}' has been reset successfully.");
             redirect('users');
 
@@ -520,7 +528,7 @@ try {
             break;
 
         default:
-            throw new DomainException('Unknown action: ' . htmlspecialchars($action));
+            throw new DomainException('Unknown action: ' . $action);
     }
 } catch (DomainException $ex) {
     flash('error', $ex->getMessage());

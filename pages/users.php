@@ -168,7 +168,8 @@ foreach ($allUsers as $u) {
                                         <input type="hidden" name="action" value="toggle_user_status">
                                         <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
                                         <button class="btn btn-sm btn-outline-<?= $u['enabled'] ? 'danger' : 'success' ?>"
-                                                onclick="return confirm('<?= $u['enabled'] ? 'Disable' : 'Enable' ?> user account @<?= e($u['username']) ?>?');">
+                                                data-confirm="<?= e(($u['enabled'] ? 'Disable' : 'Enable') . " user account @{$u['username']}?") ?>"
+                                                onclick="return confirm(this.dataset.confirm);">
                                             <?= $u['enabled'] ? 'Disable' : 'Enable' ?>
                                         </button>
                                     </form>

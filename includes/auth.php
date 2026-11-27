@@ -11,9 +11,29 @@ declare(strict_types=1);
 // Enforce 30-minute idle session timeout (Q7 Session Security)
 const SESSION_IDLE_TIMEOUT = 1800;
 
+/**
+ * Determine whether the current authenticated session has exceeded the idle timeout.
+ */
+function is_session_timed_out(?int $now = null): bool
+{
+    if (empty($_SESSION['user']) || !isset($_SESSION['last_activity'])) {
+        return false;
+    }
+    $currentTime = $now ?? time();
+    return ($currentTime - (int)$_SESSION['last_activity']) > SESSION_IDLE_TIMEOUT;
+}
+
+/**
+ * Clear authenticated identity keys from the active session.
+ */
+function clear_authenticated_session(): void
+{
+    unset($_SESSION['user'], $_SESSION['user_id'], $_SESSION['last_activity']);
+}
+
 if (!empty($_SESSION['user'])) {
     $now = time();
-    if (isset($_SESSION['last_activity']) && ($now - (int)$_SESSION['last_activity'] > SESSION_IDLE_TIMEOUT)) {
+    if (is_session_timed_out($now)) {
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
@@ -21,6 +41,7 @@ if (!empty($_SESSION['user'])) {
         }
         session_destroy();
         session_start();
+        session_regenerate_id(true);
         $_SESSION['_flash'][] = [
             'type' => 'error',
             'text' => 'Session expired due to 30 minutes of inactivity. Please sign in again.'
@@ -88,7 +109,7 @@ function require_login(): void
 
     $row = fetch_one('SELECT id, full_name, username, role, enabled FROM app_users WHERE id = ?', [user()['id']]);
     if (!$row || !(int)$row['enabled']) {
-        unset($_SESSION['user']);
+        clear_authenticated_session();
         flash('error', 'This account is no longer active. Please contact an administrator.');
         redirect('login');
     }

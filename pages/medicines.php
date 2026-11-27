@@ -26,6 +26,10 @@ if ($tab === '' || !in_array($tab, ['inventory', 'medicine_form', 'categories', 
     }
 }
 
+if (in_array($tab, ['medicine_form', 'categories', 'suppliers'], true)) {
+    require_admin();
+}
+
 // -------------------------------------------------------------
 // TAB 1: Inventory Data
 // -------------------------------------------------------------
@@ -448,7 +452,7 @@ $suppliersAll = fetch_all('SELECT s.*, (SELECT COUNT(*) FROM medicines m WHERE m
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="category_delete">
                                             <input type="hidden" name="id" value="<?= (int)$cat['id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Delete category &quot;<?= e($cat['name']) ?>&quot;?');" <?= (int)$cat['medicines_count'] > 0 ? 'disabled' : '' ?>>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete" data-confirm="<?= e("Delete category \"{$cat['name']}\"?") ?>" onclick="return confirm(this.dataset.confirm);" <?= (int)$cat['medicines_count'] > 0 ? 'disabled' : '' ?>>
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
@@ -553,7 +557,7 @@ $suppliersAll = fetch_all('SELECT s.*, (SELECT COUNT(*) FROM medicines m WHERE m
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="action" value="supplier_delete">
                                             <input type="hidden" name="id" value="<?= (int)$sup['id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Delete supplier &quot;<?= e($sup['name']) ?>&quot;?');" <?= (int)$sup['medicines_count'] > 0 ? 'disabled' : '' ?>>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete" data-confirm="<?= e("Delete supplier \"{$sup['name']}\"?") ?>" onclick="return confirm(this.dataset.confirm);" <?= (int)$sup['medicines_count'] > 0 ? 'disabled' : '' ?>>
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>

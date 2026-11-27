@@ -109,7 +109,7 @@ if (!$order) {
 // Strict IDOR Protection: Customers may only view their own orders
 if (is_customer() && (int)$order['customer_id'] !== (int)user()['id']) {
     flash('danger', 'Access denied: You are not authorized to view this order.');
-    redirect(url('orders'));
+    redirect('orders');
 }
 
 // Fetch ordered items

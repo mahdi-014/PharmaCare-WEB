@@ -9,12 +9,36 @@ declare(strict_types=1);
 // Initialize Hardened Session (Q7 Session Security)
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['SERVER_PORT'] ?? null) == 443)
+        || (strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https');
     session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
         'httponly' => true,
-        'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'secure'   => $isHttps,
         'samesite' => 'Lax',
     ]);
     session_start();
+}
+
+const PASSWORD_HASH_COST = 12;
+
+/**
+ * Hash a plaintext password using the unified Bcrypt policy.
+ */
+function hash_password(string $password): string
+{
+    return password_hash($password, PASSWORD_BCRYPT, ['cost' => PASSWORD_HASH_COST]);
+}
+
+/**
+ * Check whether an existing password hash needs transparent rehashing.
+ */
+function password_needs_upgrade(string $storedHash): bool
+{
+    return password_needs_rehash($storedHash, PASSWORD_BCRYPT, ['cost' => PASSWORD_HASH_COST]);
 }
 
 // HTTP Security Headers

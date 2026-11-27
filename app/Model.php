@@ -39,7 +39,7 @@ class User
 
     public static function createCustomer(array $data): int
     {
-        $hash = password_hash($data['password'], PASSWORD_BCRYPT);
+        $hash = hash_password($data['password']);
         $stmt = db()->prepare(
             'INSERT INTO app_users (full_name, username, email, phone, address, password, role, enabled) 
              VALUES (?, ?, ?, ?, ?, ?, "CUSTOMER", 1)'
